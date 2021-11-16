@@ -3,7 +3,10 @@ import * as Joi from 'joi';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppService } from './app.service';
+import { JwtModule } from './jwt/jwt.module';
+import { UserModule } from './user/user.module';
+import { CommonModule } from './common/common.module';
+import { User } from './user/entities/user.entity';
 
 @Module({
   imports: [
@@ -18,6 +21,7 @@ import { AppService } from './app.service';
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
+        JWT_PRIVATE_TOKEN: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRoot({
@@ -29,13 +33,16 @@ import { AppService } from './app.service';
       database: process.env.DB_NAME,
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: process.env.NODE_ENV !== 'prod',
-      entities: [],
+      entities: [User],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
     }),
+    JwtModule,
+    UserModule,
+    CommonModule,
   ],
   controllers: [],
-  providers: [AppService],
+  providers: [],
 })
 export class AppModule {}
