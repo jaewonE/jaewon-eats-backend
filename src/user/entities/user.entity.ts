@@ -25,7 +25,7 @@ registerEnumType(UserRole, { name: 'UserRole' });
 enum UserGender {
   Male,
   Female,
-  GENDERLESS,
+  Genderless,
 }
 registerEnumType(UserGender, { name: 'UserGender' });
 
@@ -52,7 +52,7 @@ export class User extends CoreEntity {
   @Column({ type: 'enum', enum: UserGender })
   @Field(() => UserGender)
   @IsEnum(UserGender)
-  gender: string;
+  gender: UserGender;
 
   @Column()
   @Field(() => String)

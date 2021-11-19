@@ -33,10 +33,7 @@ export class UserService {
         };
       }
     } catch (error) {
-      return {
-        sucess: false,
-        error,
-      };
+      return { sucess: false, error: 'unexpected error from createUser' };
     }
   }
 
@@ -47,7 +44,7 @@ export class UserService {
         ? { sucess: true, user }
         : { sucess: false, error: 'Can not find user.' };
     } catch (error) {
-      return { sucess: false, error };
+      return { sucess: false, error: 'unexpected error from findUser' };
     }
   }
 
@@ -66,16 +63,20 @@ export class UserService {
         if (payload.age) user.age = payload.age;
         if (payload.name) user.name = payload.name;
         try {
-          this.userDB.save(this.userDB.create(user));
+          await this.userDB.save(this.userDB.create(user));
           return { sucess: true, user };
         } catch (error) {
-          return { sucess: false, error };
+          return {
+            sucess: false,
+            error:
+              'unexpected error from updateUser while saving user infomation',
+          };
         }
       } else {
         return { sucess: false, error: 'Can not find user.' };
       }
     } catch (error) {
-      return { sucess: false, error };
+      return { sucess: false, error: 'unexpected error from updateUser' };
     }
   }
 
@@ -89,7 +90,7 @@ export class UserService {
         return { sucess: false, error: 'Can not find user.' };
       }
     } catch (error) {
-      return { sucess: false, error };
+      return { sucess: false, error: 'unexpected error from deleteUser' };
     }
   }
 }
