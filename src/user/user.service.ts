@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { Repository } from 'typeorm';
+import { LoginInput } from './dtos/userAuth.dto';
 import {
   CreateUserInput,
   UpdateUser,
@@ -33,7 +34,7 @@ export class UserService {
         };
       }
     } catch (error) {
-      return { sucess: false, error: 'unexpected error from createUser' };
+      return { sucess: false, error: 'Unexpected error from createUser' };
     }
   }
 
@@ -44,7 +45,7 @@ export class UserService {
         ? { sucess: true, user }
         : { sucess: false, error: 'Can not find user.' };
     } catch (error) {
-      return { sucess: false, error: 'unexpected error from findUser' };
+      return { sucess: false, error: 'Unexpected error from findUser' };
     }
   }
 
@@ -69,14 +70,14 @@ export class UserService {
           return {
             sucess: false,
             error:
-              'unexpected error from updateUser while saving user infomation',
+              'Unexpected error from updateUser while saving user infomation',
           };
         }
       } else {
         return { sucess: false, error: 'Can not find user.' };
       }
     } catch (error) {
-      return { sucess: false, error: 'unexpected error from updateUser' };
+      return { sucess: false, error: 'Unexpected error from updateUser' };
     }
   }
 
@@ -90,7 +91,25 @@ export class UserService {
         return { sucess: false, error: 'Can not find user.' };
       }
     } catch (error) {
-      return { sucess: false, error: 'unexpected error from deleteUser' };
+      return { sucess: false, error: 'Unexpected error from deleteUser' };
+    }
+  }
+
+  async login({ email, password }: LoginInput): Promise<CoreOuput> {
+    try {
+      const user = await this.userDB.findOne(
+        { email },
+        { select: ['password'] },
+      );
+      if (user) {
+        return (await user.checkPassword(password))
+          ? { sucess: true }
+          : { sucess: false, error: 'Wrong password' };
+      } else {
+        return { sucess: false, error: 'Can not find user.' };
+      }
+    } catch (e) {
+      return { sucess: false, error: 'Unexpected error from login' };
     }
   }
 }

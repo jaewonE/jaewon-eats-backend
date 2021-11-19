@@ -31,7 +31,7 @@ describe('UserService', () => {
     email: 'test@email.com',
   };
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
         UserService,
@@ -45,12 +45,12 @@ describe('UserService', () => {
     userRepository = module.get(getRepositoryToken(User));
   });
 
-  it('should be defined', () => {
+  it('Should be defined', () => {
     expect(service).toBeDefined();
   });
 
   describe('createUser', () => {
-    it('should fail if user exists', async () => {
+    it('Should fail if user exists', async () => {
       userRepository.findOne.mockResolvedValue(findUserArgs);
       const result = await service.createUser(createUserArgs);
       expect(result).toMatchObject({
@@ -59,7 +59,7 @@ describe('UserService', () => {
       });
     });
 
-    it('should create user', async () => {
+    it('Should create user', async () => {
       userRepository.findOne.mockResolvedValue(null);
       userRepository.create.mockReturnValue(createUserArgs);
       userRepository.save.mockResolvedValue(createUserArgs);
@@ -75,17 +75,17 @@ describe('UserService', () => {
       expect(result).toMatchObject({ sucess: true });
     });
 
-    it('should fail on exception', async () => {
+    it('Should fail on exception', async () => {
       userRepository.findOne.mockRejectedValue(new Error());
       const result = await service.createUser(createUserArgs);
       expect(result).toMatchObject({
         sucess: false,
-        error: 'unexpected error from createUser',
+        error: 'Unexpected error from createUser',
       });
     });
   });
   describe('findUser', () => {
-    it('should fail if user does not exists', async () => {
+    it('Should fail if user does not exists', async () => {
       userRepository.findOne.mockResolvedValue(null);
       const result = await service.findUser(findUserArgs);
       expect(result).toMatchObject({
@@ -94,22 +94,22 @@ describe('UserService', () => {
       });
     });
 
-    it('should find user if the user exists', async () => {
+    it('Should find user if the user exists', async () => {
       userRepository.findOne.mockResolvedValue(createUserArgs);
       const result = await service.findUser(findUserArgs);
 
-      expect(userRepository.create).toHaveBeenCalledTimes(1);
-      expect(userRepository.create).toBeCalledWith(createUserArgs);
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(userRepository.findOne).toBeCalledWith(findUserArgs);
 
       expect(result).toMatchObject({ sucess: true, user: createUserArgs });
     });
 
-    it('should fail on exception', async () => {
+    it('Should fail on exception', async () => {
       userRepository.findOne.mockRejectedValue(new Error());
       const result = await service.findUser(createUserArgs);
       expect(result).toMatchObject({
         sucess: false,
-        error: 'unexpected error from findUser',
+        error: 'Unexpected error from findUser',
       });
     });
   });
@@ -121,7 +121,7 @@ describe('UserService', () => {
       name: 'test_name',
       emailVarifed: false,
     };
-    it('should fail if user does not exists', async () => {
+    it('Should fail if user does not exists', async () => {
       userRepository.findOne.mockResolvedValue(null);
       const result = await service.updateUser(findUserArgs, {
         email: 'change@email.com',
@@ -132,7 +132,7 @@ describe('UserService', () => {
       });
     });
 
-    it('should update user object', async () => {
+    it('Should update user object', async () => {
       userRepository.findOne.mockResolvedValue(createUserArgs);
       userRepository.create.mockReturnValue(updatedUserObject);
       userRepository.save.mockResolvedValue(updatedUserObject);
@@ -142,10 +142,10 @@ describe('UserService', () => {
         name: 'test_name',
       });
 
-      expect(userRepository.create).toHaveBeenCalledTimes(2);
+      expect(userRepository.create).toHaveBeenCalledTimes(1);
       expect(userRepository.create).toHaveBeenCalledWith(updatedUserObject);
 
-      expect(userRepository.save).toHaveBeenCalledTimes(2);
+      expect(userRepository.save).toHaveBeenCalledTimes(1);
       expect(userRepository.save).toHaveBeenCalledWith(updatedUserObject);
 
       expect(sucess).toEqual(true);
@@ -153,26 +153,27 @@ describe('UserService', () => {
       expect(user.name).toEqual('test_name');
     });
 
-    it('should fail on exception while saving user object', async () => {
+    it('Should fail on exception while saving user object', async () => {
+      userRepository.findOne.mockReturnValue(createUserArgs);
       userRepository.save.mockRejectedValue(new Error());
       const result = await service.updateUser(findUserArgs, updatedUserObject);
       expect(result).toMatchObject({
         sucess: false,
-        error: 'unexpected error from updateUser while saving user infomation',
+        error: 'Unexpected error from updateUser while saving user infomation',
       });
     });
 
-    it('should fail on exception', async () => {
+    it('Should fail on exception', async () => {
       userRepository.findOne.mockRejectedValue(new Error());
       const result = await service.updateUser(findUserArgs, updatedUserObject);
       expect(result).toMatchObject({
         sucess: false,
-        error: 'unexpected error from updateUser',
+        error: 'Unexpected error from updateUser',
       });
     });
   });
   describe('deleteUser', () => {
-    it('should fail if user does not exists', async () => {
+    it('Should fail if user does not exists', async () => {
       userRepository.findOne.mockResolvedValue(null);
       const result = await service.deleteUser(findUserArgs);
       expect(result).toMatchObject({
@@ -181,19 +182,64 @@ describe('UserService', () => {
       });
     });
 
-    it('should delete user object', async () => {
+    it('Should delete user object', async () => {
       userRepository.findOne.mockResolvedValue(findUserArgs);
       userRepository.delete.mockResolvedValue(null);
       const result = await service.deleteUser(findUserArgs);
       expect(result).toMatchObject({ sucess: true });
     });
 
-    it('should fail on exception', async () => {
+    it('Should fail on exception', async () => {
       userRepository.findOne.mockRejectedValue(new Error());
       const result = await service.deleteUser(findUserArgs);
       expect(result).toMatchObject({
         sucess: false,
-        error: 'unexpected error from deleteUser',
+        error: 'Unexpected error from deleteUser',
+      });
+    });
+  });
+
+  describe('login', () => {
+    const loginArgs = {
+      email: 'test@email.com',
+      password: 'testPassword',
+    };
+    it('Should fail if user does not exists', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+      const result = await service.login(loginArgs);
+      expect(result).toMatchObject({
+        sucess: false,
+        error: 'Can not find user.',
+      });
+    });
+
+    it('Should sucessfully login', async () => {
+      userRepository.findOne.mockResolvedValue({
+        password: 'testPassword',
+        checkPassword: jest.fn(() => Promise.resolve(true)),
+      });
+      const { sucess } = await service.login(loginArgs);
+      expect(sucess).toEqual(true);
+    });
+
+    it('Should fail if input password was wrong.', async () => {
+      userRepository.findOne.mockResolvedValue({
+        password: 'testPassword',
+        checkPassword: jest.fn(() => Promise.resolve(false)),
+      });
+      const result = await service.login({
+        email: 'test@email.com',
+        password: 'WrongPassword',
+      });
+      expect(result).toMatchObject({ sucess: false, error: 'Wrong password' });
+    });
+
+    it('Should fail on expection', async () => {
+      userRepository.findOne.mockRejectedValue(new Error());
+      const result = await service.login(loginArgs);
+      expect(result).toMatchObject({
+        sucess: false,
+        error: 'Unexpected error from login',
       });
     });
   });

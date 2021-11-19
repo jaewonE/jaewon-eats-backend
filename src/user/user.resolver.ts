@@ -1,5 +1,6 @@
 import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
+import { LoginInput } from './dtos/userAuth.dto';
 import {
   CreateUserInput,
   UpdateUser,
@@ -79,5 +80,10 @@ export class UserResolver {
     return error
       ? { sucess: false, error }
       : this.userService.deleteUser(selector);
+  }
+
+  @Mutation(() => CoreOuput)
+  async login(@Args('input') loginArgs: LoginInput): Promise<CoreOuput> {
+    return this.userService.login(loginArgs);
   }
 }

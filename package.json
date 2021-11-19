@@ -1,6 +1,6 @@
 {
   "name": "jaewon-eats-backend",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "jaewon-eats-backend using Typescript, NestJS, Postgresql, GraphQL",
   "author": "JaewonE",
   "private": true,
@@ -28,7 +28,9 @@
     "@nestjs/mapped-types": "^1.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/typeorm": "^8.0.2",
+    "@types/bcrypt": "^5.0.0",
     "apollo-server-express": "^3.5.0",
+    "bcrypt": "^5.0.1",
     "class-validator": "^0.13.1",
     "cross-env": "^7.0.3",
     "graphql": "^15.7.2",
