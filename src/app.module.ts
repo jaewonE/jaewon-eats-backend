@@ -1,12 +1,18 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import * as Joi from 'joi';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from './jwt/jwt.module';
 import { UserModule } from './user/user.module';
 import { CommonModule } from './common/common.module';
 import { User } from './user/entities/user.entity';
+import { AuthModule } from './auth/auth.module';
+import { JWTMiddleware } from './auth/jwt/auth.jwt.middleware';
 
 @Module({
   imports: [
@@ -38,11 +44,17 @@ import { User } from './user/entities/user.entity';
     GraphQLModule.forRoot({
       autoSchemaFile: true,
     }),
-    JwtModule,
     UserModule,
     CommonModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(JWTMiddleware)
+      .forRoutes({ path: '/graphql', method: RequestMethod.POST });
+  }
+}

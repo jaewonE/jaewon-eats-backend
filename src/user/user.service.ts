@@ -1,20 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from 'src/auth/jwt/auth.jwt.service';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { Repository } from 'typeorm';
-import { LoginInput } from './dtos/userAuth.dto';
+import { LoginInput, LoginOutput } from './dtos/userAuth.dto';
 import {
   CreateUserInput,
   UpdateUser,
   UserOutput,
   UserSelector,
 } from './dtos/userCRUD.dto';
+import { userErrors } from './dtos/userError.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userDB: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async createUser(createUserInput: CreateUserInput): Promise<CoreOuput> {
@@ -28,24 +31,19 @@ export class UserService {
           sucess: true,
         };
       } else {
-        return {
-          sucess: false,
-          error: `An account with Email ${createUserInput.email} already exists.`,
-        };
+        return userErrors.userExists(createUserInput.email);
       }
     } catch (error) {
-      return { sucess: false, error: 'Unexpected error from createUser' };
+      return userErrors.unexpectedError('createUser');
     }
   }
 
   async findUser(selector: UserSelector): Promise<UserOutput> {
     try {
       const user = await this.userDB.findOne(selector);
-      return user
-        ? { sucess: true, user }
-        : { sucess: false, error: 'Can not find user.' };
+      return user ? { sucess: true, user } : userErrors.notFound;
     } catch (error) {
-      return { sucess: false, error: 'Unexpected error from findUser' };
+      return userErrors.unexpectedError('findUser');
     }
   }
 
@@ -67,17 +65,15 @@ export class UserService {
           await this.userDB.save(this.userDB.create(user));
           return { sucess: true, user };
         } catch (error) {
-          return {
-            sucess: false,
-            error:
-              'Unexpected error from updateUser while saving user infomation',
-          };
+          return userErrors.unexpectedError(
+            'updateUser while saving user infomation',
+          );
         }
       } else {
-        return { sucess: false, error: 'Can not find user.' };
+        return userErrors.notFound;
       }
     } catch (error) {
-      return { sucess: false, error: 'Unexpected error from updateUser' };
+      return userErrors.unexpectedError('updateUser');
     }
   }
 
@@ -88,28 +84,55 @@ export class UserService {
         await this.userDB.delete(selector);
         return { sucess: true };
       } else {
-        return { sucess: false, error: 'Can not find user.' };
+        return userErrors.notFound;
       }
     } catch (error) {
-      return { sucess: false, error: 'Unexpected error from deleteUser' };
+      return userErrors.unexpectedError('deleteUser');
     }
   }
 
-  async login({ email, password }: LoginInput): Promise<CoreOuput> {
+  async validateUserPassword({
+    email,
+    password,
+  }: LoginInput): Promise<CoreOuput> {
     try {
       const user = await this.userDB.findOne(
         { email },
         { select: ['password'] },
       );
       if (user) {
-        return (await user.checkPassword(password))
-          ? { sucess: true }
-          : { sucess: false, error: 'Wrong password' };
+        if (await user.checkPassword(password)) {
+          return { sucess: true };
+        } else {
+          return userErrors.wrongPassword;
+        }
       } else {
-        return { sucess: false, error: 'Can not find user.' };
+        return userErrors.notFound;
       }
     } catch (e) {
-      return { sucess: false, error: 'Unexpected error from login' };
+      return userErrors.unexpectedError('validateUserPassword');
     }
+  }
+
+  async login({ email, password }: LoginInput): Promise<LoginOutput> {
+    try {
+      const user = await this.userDB.findOne(
+        { email },
+        { select: ['password', 'id'] },
+      );
+      if (user) {
+        return user.checkPassword(password)
+          ? { sucess: true, token: this.jwtService.sign(String(user.id)) }
+          : userErrors.wrongPassword;
+      } else {
+        return userErrors.notFound;
+      }
+    } catch (e) {
+      return userErrors.unexpectedError('login');
+    }
+  }
+
+  async getCurrentUser(id: number): Promise<UserOutput> {
+    return await this.findUser({ id });
   }
 }
