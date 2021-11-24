@@ -41,7 +41,7 @@ export class UserService {
   async findUser(selector: UserSelector): Promise<UserOutput> {
     try {
       const user = await this.userDB.findOne(selector);
-      return user ? { sucess: true, user } : userErrors.notFound;
+      return user ? { sucess: true, user } : userErrors.userNotFound;
     } catch (error) {
       return userErrors.unexpectedError('findUser');
     }
@@ -70,7 +70,7 @@ export class UserService {
           );
         }
       } else {
-        return userErrors.notFound;
+        return userErrors.userNotFound;
       }
     } catch (error) {
       return userErrors.unexpectedError('updateUser');
@@ -84,33 +84,10 @@ export class UserService {
         await this.userDB.delete(selector);
         return { sucess: true };
       } else {
-        return userErrors.notFound;
+        return userErrors.userNotFound;
       }
     } catch (error) {
       return userErrors.unexpectedError('deleteUser');
-    }
-  }
-
-  async validateUserPassword({
-    email,
-    password,
-  }: LoginInput): Promise<CoreOuput> {
-    try {
-      const user = await this.userDB.findOne(
-        { email },
-        { select: ['password'] },
-      );
-      if (user) {
-        if (await user.checkPassword(password)) {
-          return { sucess: true };
-        } else {
-          return userErrors.wrongPassword;
-        }
-      } else {
-        return userErrors.notFound;
-      }
-    } catch (e) {
-      return userErrors.unexpectedError('validateUserPassword');
     }
   }
 
@@ -121,11 +98,15 @@ export class UserService {
         { select: ['password', 'id'] },
       );
       if (user) {
-        return user.checkPassword(password)
-          ? { sucess: true, token: this.jwtService.sign(String(user.id)) }
-          : userErrors.wrongPassword;
+        const validate = await user.checkPassword(password);
+        if (validate) {
+          const token = this.jwtService.sign(String(user.id));
+          return { sucess: true, token };
+        } else {
+          return userErrors.wrongPassword;
+        }
       } else {
-        return userErrors.notFound;
+        return userErrors.userNotFound;
       }
     } catch (e) {
       return userErrors.unexpectedError('login');

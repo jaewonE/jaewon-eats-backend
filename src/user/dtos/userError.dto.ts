@@ -1,6 +1,6 @@
 //CoreOutput type
 export const userErrors = {
-  notFound: {
+  userNotFound: {
     sucess: false,
     error: 'User not found',
   },
