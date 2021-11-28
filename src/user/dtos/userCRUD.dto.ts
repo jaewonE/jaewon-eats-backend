@@ -5,13 +5,7 @@ import {
   PartialType,
   PickType,
 } from '@nestjs/graphql';
-import {
-  IsDefined,
-  IsEmail,
-  IsNumber,
-  IsObject,
-  IsOptional,
-} from 'class-validator';
+import { IsDefined, IsEmail, IsNumber, IsOptional } from 'class-validator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { User } from '../entities/user.entity';
 
