@@ -19,12 +19,8 @@ export class JWTMiddleware implements NestMiddleware {
         } else {
           console.error(`No property named userId in JWT`);
         }
-      } else {
-        console.error(`No property named ${JWT_KEY}`);
       }
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
     next();
   }
 }

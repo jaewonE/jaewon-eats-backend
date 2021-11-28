@@ -27,7 +27,7 @@ export class UserResolver {
       return { selector: { id } };
     } else {
       return {
-        error: `Email or ID does not exist on the input.`,
+        error: 'Email or ID does not exist on the input.',
       };
     }
   }
@@ -57,7 +57,6 @@ export class UserResolver {
       ? { sucess: false, error }
       : this.userService.findUser(selector);
   }
-
   @Mutation(() => UserOutput)
   async updateUser(
     @Args('input') updateUserInput: UpdateUserInput,

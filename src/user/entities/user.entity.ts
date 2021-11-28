@@ -46,7 +46,7 @@ export class User extends CoreEntity {
   @IsPositive()
   age: number;
 
-  @Column()
+  @Column({ unique: true })
   @Field(() => String)
   @IsEmail()
   email: string;

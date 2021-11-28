@@ -108,7 +108,7 @@ export class UserService {
       } else {
         return userErrors.userNotFound;
       }
-    } catch (e) {
+    } catch (error) {
       return userErrors.unexpectedError('login');
     }
   }
