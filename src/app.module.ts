@@ -13,6 +13,9 @@ import { CommonModule } from './common/common.module';
 import { User } from './user/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { JWTMiddleware } from './auth/jwt/auth.jwt.middleware';
+import { RestaurantsModule } from './restaurants/restaurants.module';
+import { Restaurant } from './restaurants/entities/restaurants.entity';
+import { Category } from './restaurants/entities/category.entity';
 
 @Module({
   imports: [
@@ -40,7 +43,7 @@ import { JWTMiddleware } from './auth/jwt/auth.jwt.middleware';
       synchronize: process.env.NODE_ENV !== 'prod',
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
-      entities: [User],
+      entities: [User, Restaurant, Category],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
@@ -48,6 +51,7 @@ import { JWTMiddleware } from './auth/jwt/auth.jwt.middleware';
     UserModule,
     CommonModule,
     AuthModule,
+    RestaurantsModule,
   ],
   controllers: [],
   providers: [],

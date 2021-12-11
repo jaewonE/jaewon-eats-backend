@@ -13,9 +13,10 @@ import {
   IsString,
 } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { BeforeInsert, Column, Entity } from 'typeorm';
+import { BeforeInsert, Column, Entity, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
+import { Restaurant } from 'src/restaurants/entities/restaurants.entity';
 
 enum UserRole {
   Client,
@@ -31,7 +32,7 @@ enum UserGender {
 }
 registerEnumType(UserGender, { name: 'UserGender' });
 
-@InputType({ isAbstract: true })
+@InputType('UserInputType', { isAbstract: true })
 @ObjectType()
 @Entity('User')
 export class User extends CoreEntity {
@@ -70,6 +71,10 @@ export class User extends CoreEntity {
   @Field(() => UserRole)
   @IsEnum(UserRole)
   role: UserRole;
+
+  @OneToMany(() => Restaurant, (restaurant) => restaurant.owner)
+  @Field(() => [Restaurant])
+  restaurants: Restaurant[];
 
   @BeforeInsert()
   async hashPassword(): Promise<void> {
