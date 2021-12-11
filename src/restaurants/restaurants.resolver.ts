@@ -1,6 +1,7 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
-import { getUserIdFromReq } from 'src/auth/jwt/auth.jwt.decorator';
+import { getUserFromReq } from 'src/auth/jwt/auth.jwt.decorator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
+import { User } from 'src/user/entities/user.entity';
 import { CreateRestaurantInput } from './dtos/create-restaurant.dto';
 import { Restaurant } from './entities/restaurants.entity';
 import { RestaurantService } from './restaurants.service';
@@ -11,12 +12,19 @@ export class RestaurantResolver {
 
   @Mutation(() => CoreOuput)
   async createRestaurant(
-    @getUserIdFromReq() userId: string,
+    @getUserFromReq() user: User | null,
     @Args('input') createRestaurantInput: CreateRestaurantInput,
   ): Promise<CoreOuput> {
-    return this.restaurantService.createRestaurant(
-      userId,
-      createRestaurantInput,
-    );
+    if (user) {
+      return this.restaurantService.createRestaurant(
+        user,
+        createRestaurantInput,
+      );
+    } else {
+      return {
+        sucess: false,
+        error: 'User Not Found on Request',
+      };
+    }
   }
 }

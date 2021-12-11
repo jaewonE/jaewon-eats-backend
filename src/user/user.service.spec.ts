@@ -233,20 +233,4 @@ describe('UserService', () => {
       expect(result).toMatchObject(userErrors.unexpectedError('login'));
     });
   });
-
-  describe('getCurrentUser', () => {
-    it('Should fail if user does not exists', async () => {
-      userRepository.findOne.mockResolvedValue(null);
-      const result = await service.getCurrentUser(1);
-      expect(result).toMatchObject(userErrors.userNotFound);
-    });
-    it('Should return current user', async () => {
-      userRepository.findOne.mockResolvedValue({ ...createUserArgs, id: 1 });
-      const result = await service.getCurrentUser(1);
-      expect(result.sucess).toEqual(true);
-      expect(result.user.id).toEqual(1);
-      expect(result.user.email).toEqual('change@email.com');
-      expect(result.user.name).toEqual('test_name');
-    });
-  });
 });

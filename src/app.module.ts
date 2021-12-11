@@ -12,10 +12,10 @@ import { UserModule } from './user/user.module';
 import { CommonModule } from './common/common.module';
 import { User } from './user/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
-import { JWTMiddleware } from './auth/jwt/auth.jwt.middleware';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { Restaurant } from './restaurants/entities/restaurants.entity';
 import { Category } from './restaurants/entities/category.entity';
+import { UserMiddleware } from './user/middleware/user.middleware';
 
 @Module({
   imports: [
@@ -59,7 +59,7 @@ import { Category } from './restaurants/entities/category.entity';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(JWTMiddleware)
+      .apply(UserMiddleware)
       .forRoutes({ path: '/graphql', method: RequestMethod.POST });
   }
 }

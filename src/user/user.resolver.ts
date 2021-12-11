@@ -1,6 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
-import { getUserIdFromReq } from 'src/auth/jwt/auth.jwt.decorator';
+import { getUserFromReq } from 'src/auth/jwt/auth.jwt.decorator';
 import { IsUserIdInReq } from 'src/auth/jwt/auth.jwt.guard';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { LoginInput, LoginOutput } from './dtos/userAuth.dto';
@@ -11,6 +11,7 @@ import {
   UserOutput,
   UserSelector,
 } from './dtos/userCRUD.dto';
+import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 
 @Resolver()
@@ -92,8 +93,19 @@ export class UserResolver {
   @Query(() => UserOutput)
   @UseGuards(IsUserIdInReq)
   async getCurrentUser(
-    @getUserIdFromReq() userId: number,
+    @getUserFromReq() user: User | null,
   ): Promise<UserOutput> {
-    return await this.userService.getCurrentUser(userId);
+    if (user) {
+      return {
+        sucess: true,
+        user,
+      };
+    } else {
+      return {
+        sucess: false,
+        error: 'User Not Found on Request',
+        user: null,
+      };
+    }
   }
 }

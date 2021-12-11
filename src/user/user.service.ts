@@ -112,8 +112,4 @@ export class UserService {
       return userErrors.unexpectedError('login');
     }
   }
-
-  async getCurrentUser(id: number): Promise<UserOutput> {
-    return await this.findUser({ id });
-  }
 }

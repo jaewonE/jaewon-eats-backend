@@ -5,7 +5,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 export class IsUserIdInReq implements CanActivate {
   canActivate(context: ExecutionContext) {
     const gqlContext = GqlExecutionContext.create(context).getContext();
-    const userId = gqlContext.req['userId'];
-    return userId ? true : false;
+    const user = gqlContext.req['user'];
+    return user ? true : false;
   }
 }
