@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
-import { JWT_KEY } from 'src/auth/jwt/auth.jwt.constant';
-import { JwtService } from 'src/auth/jwt/auth.jwt.service';
+import { JWT_KEY } from 'src/auth/jwt/jwt.constant';
+import { JwtService } from 'src/auth/jwt/jwt.service';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()

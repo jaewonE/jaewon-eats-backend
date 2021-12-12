@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import { JwtService } from './auth.jwt.service';
+import { JwtService } from './jwt.service';
 import * as jwt from 'jsonwebtoken';
 
 const USER_ID = '1';

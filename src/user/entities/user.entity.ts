@@ -18,10 +18,10 @@ import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Restaurant } from 'src/restaurants/entities/restaurants.entity';
 
-enum UserRole {
-  Client,
-  Owner,
-  Delivery,
+export enum UserRole {
+  Client = 'Client',
+  Owner = 'Owner',
+  Delivery = 'Delivery',
 }
 registerEnumType(UserRole, { name: 'UserRole' });
 
@@ -41,21 +41,21 @@ export class User extends CoreEntity {
   @IsString()
   name: string;
 
-  @Column()
-  @Field(() => Number)
+  @Column({ nullable: true })
+  @Field(() => Number, { nullable: true })
   @IsNumber()
   @IsPositive()
-  age: number;
+  age?: number;
 
   @Column({ unique: true })
   @Field(() => String)
   @IsEmail()
   email: string;
 
-  @Column({ type: 'enum', enum: UserGender })
-  @Field(() => UserGender)
+  @Column({ type: 'enum', enum: UserGender, nullable: true })
+  @Field(() => UserGender, { nullable: true })
   @IsEnum(UserGender)
-  gender: UserGender;
+  gender?: UserGender;
 
   @Column({ select: false })
   @Field(() => String)

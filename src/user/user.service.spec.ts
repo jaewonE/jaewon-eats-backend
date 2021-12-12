@@ -1,9 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { JwtService } from 'src/auth/jwt/auth.jwt.service';
+import { JwtService } from 'src/auth/jwt/jwt.service';
 import { Repository } from 'typeorm';
 import { userErrors } from './dtos/userError.dto';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { UserService } from './user.service';
 
 const mockUserRepository = () => ({
@@ -31,7 +31,7 @@ describe('UserService', () => {
     email: 'test@email.com',
     password: '12345',
     gender: 0,
-    role: 0,
+    role: UserRole.Owner,
   };
 
   const findUserArgs = {

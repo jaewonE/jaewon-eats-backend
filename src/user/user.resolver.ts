@@ -1,7 +1,6 @@
-import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
-import { getUserFromReq } from 'src/auth/jwt/auth.jwt.decorator';
-import { IsUserIdInReq } from 'src/auth/jwt/auth.jwt.guard';
+import { getUserFromReq } from 'src/auth/jwt/jwt.decorator';
+import { Role } from 'src/auth/role/role.decorator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { LoginInput, LoginOutput } from './dtos/userAuth.dto';
 import {
@@ -50,6 +49,7 @@ export class UserResolver {
   }
 
   @Query(() => UserOutput)
+  @Role(['Any'])
   async findUser(
     @Args('input') inputSelector: UserSelector,
   ): Promise<UserOutput> {
@@ -59,6 +59,7 @@ export class UserResolver {
       : this.userService.findUser(selector);
   }
   @Mutation(() => UserOutput)
+  @Role(['Any'])
   async updateUser(
     @Args('input') updateUserInput: UpdateUserInput,
   ): Promise<UserOutput> {
@@ -91,7 +92,7 @@ export class UserResolver {
   }
 
   @Query(() => UserOutput)
-  @UseGuards(IsUserIdInReq)
+  @Role(['Any'])
   async getCurrentUser(
     @getUserFromReq() user: User | null,
   ): Promise<UserOutput> {
