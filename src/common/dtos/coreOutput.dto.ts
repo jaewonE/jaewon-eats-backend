@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { IsBoolean } from 'class-validator';
+import { IsBoolean, IsString } from 'class-validator';
 
 @ObjectType()
 export class CoreOuput {
@@ -8,5 +8,6 @@ export class CoreOuput {
   sucess: boolean;
 
   @Field(() => String, { nullable: true })
+  @IsString()
   error?: string;
 }

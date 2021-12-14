@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
+import { GetAllCategoryOutput, GetCategoryOutput } from './dtos/category.dto';
 import {
   CreateRestaurantInput,
   UpdateRestaurantInput,
@@ -14,16 +15,16 @@ import { Restaurant } from './entities/restaurants.entity';
 export class RestaurantService {
   constructor(
     @InjectRepository(Restaurant)
-    private readonly restaurants: Repository<Restaurant>,
+    private readonly restaurantDB: Repository<Restaurant>,
     @InjectRepository(Category)
-    private readonly categories: Repository<Category>,
+    private readonly categoryDB: Repository<Category>,
   ) {}
 
   async isCategoryExist(inputCategory): Promise<Category | null> {
     try {
       const categoryName = inputCategory.trim().toLowerCase();
       const categorySlug = categoryName.replace(/ /g, '-');
-      const category = await this.categories.findOne({ slug: categorySlug });
+      const category = await this.categoryDB.findOne({ slug: categorySlug });
       return category ? category : null;
     } catch (e) {
       return null;
@@ -34,7 +35,7 @@ export class RestaurantService {
     createRestaurantInput: CreateRestaurantInput,
   ): Promise<CoreOuput> {
     try {
-      const newRestaurant = this.restaurants.create(createRestaurantInput);
+      const newRestaurant = this.restaurantDB.create(createRestaurantInput);
       newRestaurant.owner = user;
       const category = await this.isCategoryExist(
         createRestaurantInput.categoryName,
@@ -46,7 +47,7 @@ export class RestaurantService {
         };
       }
       newRestaurant.category = category;
-      await this.restaurants.save(newRestaurant);
+      await this.restaurantDB.save(newRestaurant);
       return {
         sucess: true,
       };
@@ -63,7 +64,7 @@ export class RestaurantService {
     updateArgs: UpdateRestaurantInput,
   ): Promise<CoreOuput> {
     try {
-      const restaurant = await this.restaurants.findOne(
+      const restaurant = await this.restaurantDB.findOne(
         updateArgs.restaurantId,
       );
       if (!restaurant) {
@@ -91,7 +92,7 @@ export class RestaurantService {
         }
         restaurant.category = category;
       }
-      await this.restaurants.save([
+      await this.restaurantDB.save([
         { id: updateArgs.restaurantId, ...restaurant },
       ])[0];
       return { sucess: true };
@@ -105,7 +106,7 @@ export class RestaurantService {
 
   async deleteRestaurant(user: User, restaurantId: number): Promise<CoreOuput> {
     try {
-      const restaurant = await this.restaurants.findOne(restaurantId);
+      const restaurant = await this.restaurantDB.findOne(restaurantId);
       if (!restaurant) {
         return {
           sucess: false,
@@ -118,9 +119,57 @@ export class RestaurantService {
           error: 'Access denied: not a owner of this restaurant.',
         };
       }
-      await this.restaurants.delete(restaurantId);
+      await this.restaurantDB.delete(restaurantId);
       return { sucess: true };
     } catch (e) {
+      return {
+        sucess: false,
+        error: 'Unexpected error from deleteRestaurant',
+      };
+    }
+  }
+
+  async getAllCategory(): Promise<GetAllCategoryOutput> {
+    try {
+      const categories = await this.categoryDB.find();
+      return categories
+        ? { sucess: true, categories }
+        : { sucess: false, error: 'Category not found.' };
+    } catch {
+      return {
+        sucess: false,
+        error: 'Unexpected error from deleteRestaurant',
+      };
+    }
+  }
+
+  async restaurantCount(category: Category): Promise<number> {
+    try {
+      return await this.restaurantDB.count({ category });
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  async getCategory(slug: string, page: number): Promise<GetCategoryOutput> {
+    try {
+      const category = await this.categoryDB.findOne({ slug });
+      if (!category) {
+        return { sucess: false, error: 'Category not found.' };
+      }
+      const totalPages = await this.restaurantCount(category);
+      const restaurants = await this.restaurantDB.find({
+        where: { category },
+        take: 25,
+        skip: (page - 1) * 25,
+      });
+      category.restaurants = restaurants;
+      return {
+        sucess: true,
+        category,
+        totalPages: Math.ceil(totalPages / 25),
+      };
+    } catch {
       return {
         sucess: false,
         error: 'Unexpected error from deleteRestaurant',
