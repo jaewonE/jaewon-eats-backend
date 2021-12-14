@@ -1,6 +1,6 @@
 {
   "name": "jaewon-eats-backend",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "jaewon-eats-backend using Typescript, NestJS, Postgresql, GraphQL",
   "author": "JaewonE",
   "private": true,

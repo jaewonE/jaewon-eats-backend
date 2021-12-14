@@ -5,6 +5,7 @@ import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { User } from 'src/user/entities/user.entity';
 import {
   CreateRestaurantInput,
+  DeleteRestaurantInput,
   UpdateRestaurantInput,
 } from './dtos/restaurantCRUD.dto';
 import { Restaurant } from './entities/restaurants.entity';
@@ -30,5 +31,14 @@ export class RestaurantResolver {
     @Args('input') updateArgs: UpdateRestaurantInput,
   ): Promise<CoreOuput> {
     return this.restaurantService.updateRestaurant(user, updateArgs);
+  }
+
+  @Mutation(() => CoreOuput)
+  @Role(['Owner'])
+  async deleteRestaurant(
+    @getUserFromReq() user: User,
+    @Args('input') { restaurantId }: DeleteRestaurantInput,
+  ): Promise<CoreOuput> {
+    return this.restaurantService.deleteRestaurant(user, restaurantId);
   }
 }

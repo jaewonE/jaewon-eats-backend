@@ -19,3 +19,10 @@ export class UpdateRestaurantInput extends PartialType(CreateRestaurantInput) {
   @IsNumber()
   restaurantId: number;
 }
+
+@InputType()
+export class DeleteRestaurantInput {
+  @Field(() => Number)
+  @IsNumber()
+  restaurantId: number;
+}

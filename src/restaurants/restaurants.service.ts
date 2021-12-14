@@ -102,4 +102,29 @@ export class RestaurantService {
       };
     }
   }
+
+  async deleteRestaurant(user: User, restaurantId: number): Promise<CoreOuput> {
+    try {
+      const restaurant = await this.restaurants.findOne(restaurantId);
+      if (!restaurant) {
+        return {
+          sucess: false,
+          error: 'Restaurant Not Found',
+        };
+      }
+      if (restaurant.ownerId != user.id) {
+        return {
+          sucess: false,
+          error: 'Access denied: not a owner of this restaurant.',
+        };
+      }
+      await this.restaurants.delete(restaurantId);
+      return { sucess: true };
+    } catch (e) {
+      return {
+        sucess: false,
+        error: 'Unexpected error from deleteRestaurant',
+      };
+    }
+  }
 }
