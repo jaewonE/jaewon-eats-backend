@@ -1,13 +1,16 @@
-import { Field, ObjectType } from '@nestjs/graphql';
-import { IsNumber, IsString } from 'class-validator';
+import { Field, InputType, PickType } from '@nestjs/graphql';
+import { IsNumber } from 'class-validator';
+import { Dish } from '../entities/dish.entity';
 
-@ObjectType()
-export class DishOptionDto {
-  @Field(() => String)
-  @IsString()
-  optionName: string;
-
+@InputType()
+export class CreateDishInput extends PickType(Dish, [
+  'name',
+  'description',
+  'photo',
+  'price',
+  'options',
+]) {
   @Field(() => Number)
   @IsNumber()
-  extraPrice: number;
+  restaurantId: number;
 }

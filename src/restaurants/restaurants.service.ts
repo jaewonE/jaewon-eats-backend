@@ -4,6 +4,7 @@ import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { User } from 'src/user/entities/user.entity';
 import { Raw, Repository } from 'typeorm';
 import { GetAllCategoryOutput, GetCategoryOutput } from './dtos/category.dto';
+import { CreateDishInput } from './dtos/dish.dto';
 import {
   CreateRestaurantInput,
   FindAllRestaurantOutput,
@@ -15,6 +16,7 @@ import { Category } from './entities/category.entity';
 import { Dish } from './entities/dish.entity';
 import { Restaurant } from './entities/restaurants.entity';
 import { CategoryErrors } from './errors/category.error';
+import { DishErrors } from './errors/dish.error';
 import { RestaurantErrors } from './errors/restaurant.error';
 
 @Injectable()
@@ -205,6 +207,29 @@ export class RestaurantService {
       };
     } catch {
       return CategoryErrors.unexpectedError('getCategory');
+    }
+  }
+
+  async createDish(
+    user: User,
+    createDishInput: CreateDishInput,
+  ): Promise<CoreOuput> {
+    try {
+      const restaurant = await this.restaurantDB.findOne({
+        id: createDishInput.restaurantId,
+      });
+      if (!restaurant) {
+        return RestaurantErrors.restaurantNotFound;
+      }
+      if (restaurant.ownerId != user.id) {
+        return RestaurantErrors.notOwner;
+      }
+      await this.dishDB.save(
+        this.dishDB.create({ ...createDishInput, restaurant }),
+      );
+      return { sucess: true };
+    } catch (e) {
+      return DishErrors.unexpectedError('createDish');
     }
   }
 }
