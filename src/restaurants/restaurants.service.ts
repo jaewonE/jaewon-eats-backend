@@ -10,8 +10,9 @@ import {
   FindRestaurantByIdOutput,
   SearchRestaurantByNameOutput,
   UpdateRestaurantInput,
-} from './dtos/restaurantCRUD.dto';
+} from './dtos/restaurant.dto';
 import { Category } from './entities/category.entity';
+import { Dish } from './entities/dish.entity';
 import { Restaurant } from './entities/restaurants.entity';
 import { CategoryErrors } from './errors/category.error';
 import { RestaurantErrors } from './errors/restaurant.error';
@@ -23,6 +24,8 @@ export class RestaurantService {
     private readonly restaurantDB: Repository<Restaurant>,
     @InjectRepository(Category)
     private readonly categoryDB: Repository<Category>,
+    @InjectRepository(Dish)
+    private readonly dishDB: Repository<Dish>,
   ) {}
 
   async isCategoryExist(inputCategory): Promise<Category | null> {

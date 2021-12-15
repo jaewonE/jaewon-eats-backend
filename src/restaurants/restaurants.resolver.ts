@@ -1,22 +1,9 @@
-import {
-  Args,
-  Int,
-  Mutation,
-  Parent,
-  Query,
-  ResolveField,
-  Resolver,
-} from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { getUserFromReq } from 'src/auth/jwt/jwt.decorator';
 import { Role } from 'src/auth/role/role.decorator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { PaginationInput } from 'src/common/dtos/pagination.dto';
 import { User } from 'src/user/entities/user.entity';
-import {
-  GetAllCategoryOutput,
-  GetCategoryInput,
-  GetCategoryOutput,
-} from './dtos/category.dto';
 import {
   CreateRestaurantInput,
   DeleteRestaurantInput,
@@ -26,8 +13,7 @@ import {
   SearchRestaurantByNameInput,
   SearchRestaurantByNameOutput,
   UpdateRestaurantInput,
-} from './dtos/restaurantCRUD.dto';
-import { Category } from './entities/category.entity';
+} from './dtos/restaurant.dto';
 import { Restaurant } from './entities/restaurants.entity';
 import { RestaurantService } from './restaurants.service';
 
@@ -81,27 +67,5 @@ export class RestaurantResolver {
     @Args('input') { restaurantId }: DeleteRestaurantInput,
   ): Promise<CoreOuput> {
     return this.restaurantService.deleteRestaurant(user, restaurantId);
-  }
-}
-
-@Resolver(() => Category)
-export class CategoryResolver {
-  constructor(private readonly restaurantService: RestaurantService) {}
-
-  @Query(() => GetAllCategoryOutput)
-  getAllCategory(): Promise<GetAllCategoryOutput> {
-    return this.restaurantService.getAllCategory();
-  }
-
-  @ResolveField(() => Int)
-  restaurantCount(@Parent() category: Category): Promise<number> {
-    return this.restaurantService.restaurantCount(category);
-  }
-
-  @Query(() => GetCategoryOutput)
-  getCategory(
-    @Args('input') { slug, page }: GetCategoryInput,
-  ): Promise<GetCategoryOutput> {
-    return this.restaurantService.getCategory(slug, page);
   }
 }
