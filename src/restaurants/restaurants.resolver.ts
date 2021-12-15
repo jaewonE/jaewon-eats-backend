@@ -10,6 +10,7 @@ import {
 import { getUserFromReq } from 'src/auth/jwt/jwt.decorator';
 import { Role } from 'src/auth/role/role.decorator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
+import { PaginationInput } from 'src/common/dtos/pagination.dto';
 import { User } from 'src/user/entities/user.entity';
 import {
   GetAllCategoryOutput,
@@ -19,6 +20,11 @@ import {
 import {
   CreateRestaurantInput,
   DeleteRestaurantInput,
+  FindAllRestaurantOutput,
+  FindRestaurantByIdInput,
+  FindRestaurantByIdOutput,
+  SearchRestaurantByNameInput,
+  SearchRestaurantByNameOutput,
   UpdateRestaurantInput,
 } from './dtos/restaurantCRUD.dto';
 import { Category } from './entities/category.entity';
@@ -31,16 +37,37 @@ export class RestaurantResolver {
 
   @Mutation(() => CoreOuput)
   @Role(['Owner'])
-  async createRestaurant(
+  createRestaurant(
     @getUserFromReq() user: User,
     @Args('input') createRestaurantInput: CreateRestaurantInput,
   ): Promise<CoreOuput> {
     return this.restaurantService.createRestaurant(user, createRestaurantInput);
   }
 
+  @Query(() => FindAllRestaurantOutput)
+  findAllRestaurant(
+    @Args('input') { page }: PaginationInput,
+  ): Promise<FindAllRestaurantOutput> {
+    return this.restaurantService.findAllRestaurant(page);
+  }
+
+  @Query(() => FindRestaurantByIdOutput)
+  findRestaurant(
+    @Args('input') { restaurantId }: FindRestaurantByIdInput,
+  ): Promise<FindRestaurantByIdOutput> {
+    return this.restaurantService.findRestaurantById(restaurantId);
+  }
+
+  @Query(() => SearchRestaurantByNameOutput)
+  searchRestaurant(
+    @Args('input') { page, restaurantName }: SearchRestaurantByNameInput,
+  ): Promise<SearchRestaurantByNameOutput> {
+    return this.restaurantService.searchRestaurantByName(page, restaurantName);
+  }
+
   @Mutation(() => CoreOuput)
   @Role(['Owner'])
-  async updateRestaurant(
+  updateRestaurant(
     @getUserFromReq() user: User,
     @Args('input') updateArgs: UpdateRestaurantInput,
   ): Promise<CoreOuput> {
@@ -49,7 +76,7 @@ export class RestaurantResolver {
 
   @Mutation(() => CoreOuput)
   @Role(['Owner'])
-  async deleteRestaurant(
+  deleteRestaurant(
     @getUserFromReq() user: User,
     @Args('input') { restaurantId }: DeleteRestaurantInput,
   ): Promise<CoreOuput> {
@@ -62,7 +89,7 @@ export class CategoryResolver {
   constructor(private readonly restaurantService: RestaurantService) {}
 
   @Query(() => GetAllCategoryOutput)
-  async getAllCategory(): Promise<GetAllCategoryOutput> {
+  getAllCategory(): Promise<GetAllCategoryOutput> {
     return this.restaurantService.getAllCategory();
   }
 

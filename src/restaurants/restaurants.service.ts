@@ -2,10 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { User } from 'src/user/entities/user.entity';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { GetAllCategoryOutput, GetCategoryOutput } from './dtos/category.dto';
 import {
   CreateRestaurantInput,
+  FindAllRestaurantOutput,
+  FindRestaurantByIdOutput,
+  SearchRestaurantByNameOutput,
   UpdateRestaurantInput,
 } from './dtos/restaurantCRUD.dto';
 import { Category } from './entities/category.entity';
@@ -55,6 +58,68 @@ export class RestaurantService {
       return {
         sucess: false,
         error: 'Unexpected error from createRestaurant',
+      };
+    }
+  }
+
+  async findAllRestaurant(page: number): Promise<FindAllRestaurantOutput> {
+    try {
+      const [restaurants, totalResult] = await this.restaurantDB.findAndCount({
+        take: 25,
+        skip: (page - 1) * 25,
+      });
+      return {
+        sucess: true,
+        totalResult,
+        totalPages: Math.ceil(totalResult / 25),
+        restaurants,
+      };
+    } catch (e) {
+      return {
+        sucess: false,
+        error: 'Unexpected error from findAllRestaurant',
+      };
+    }
+  }
+
+  async findRestaurantById(
+    restaurantId: number,
+  ): Promise<FindRestaurantByIdOutput> {
+    try {
+      const restaurant = await this.restaurantDB.findOne({ id: restaurantId });
+      return restaurant
+        ? { sucess: true, restaurant }
+        : { sucess: false, error: 'Restaurant not found.' };
+    } catch (e) {
+      return {
+        sucess: false,
+        error: 'Unexpected error from findRestaurantById',
+      };
+    }
+  }
+
+  async searchRestaurantByName(
+    page: number,
+    restaurantName: string,
+  ): Promise<SearchRestaurantByNameOutput> {
+    try {
+      const [restaurants, totalResult] = await this.restaurantDB.findAndCount({
+        where: { name: Raw((name) => `${name} ILIKE '%${restaurantName}%'`) },
+        skip: (page - 1) * 25,
+        take: 25,
+      });
+      return restaurants
+        ? {
+            sucess: true,
+            restaurants,
+            totalResult,
+            totalPages: Math.ceil(totalResult / 25),
+          }
+        : { sucess: false, error: 'Restaurant not found.' };
+    } catch (e) {
+      return {
+        sucess: false,
+        error: 'Unexpected error from findRestaurantById',
       };
     }
   }
@@ -157,7 +222,7 @@ export class RestaurantService {
       if (!category) {
         return { sucess: false, error: 'Category not found.' };
       }
-      const totalPages = await this.restaurantCount(category);
+      const totalResult = await this.restaurantCount(category);
       const restaurants = await this.restaurantDB.find({
         where: { category },
         take: 25,
@@ -167,7 +232,8 @@ export class RestaurantService {
       return {
         sucess: true,
         category,
-        totalPages: Math.ceil(totalPages / 25),
+        totalResult,
+        totalPages: Math.ceil(totalResult / 25),
       };
     } catch {
       return {
