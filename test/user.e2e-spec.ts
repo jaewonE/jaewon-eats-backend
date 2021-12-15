@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { getConnection } from 'typeorm';
-import { userErrors } from 'src/user/dtos/userError.dto';
+import { userErrors } from 'src/user/errors/user.error';
 
 const GRAPHQL_ENDPOINT = '/graphql';
 const userObj = {

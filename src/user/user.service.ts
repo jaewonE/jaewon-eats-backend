@@ -10,7 +10,7 @@ import {
   UserOutput,
   UserSelector,
 } from './dtos/userCRUD.dto';
-import { userErrors } from './dtos/userError.dto';
+import { userErrors } from './errors/user.error';
 import { User } from './entities/user.entity';
 
 @Injectable()

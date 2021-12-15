@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtService } from 'src/auth/jwt/jwt.service';
 import { Repository } from 'typeorm';
-import { userErrors } from './dtos/userError.dto';
+import { userErrors } from './errors/user.error';
 import { User, UserRole } from './entities/user.entity';
 import { UserService } from './user.service';
 

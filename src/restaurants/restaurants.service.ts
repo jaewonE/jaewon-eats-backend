@@ -13,6 +13,8 @@ import {
 } from './dtos/restaurantCRUD.dto';
 import { Category } from './entities/category.entity';
 import { Restaurant } from './entities/restaurants.entity';
+import { CategoryErrors } from './errors/category.error';
+import { RestaurantErrors } from './errors/restaurant.error';
 
 @Injectable()
 export class RestaurantService {
@@ -44,21 +46,15 @@ export class RestaurantService {
         createRestaurantInput.categoryName,
       );
       if (!category) {
-        return {
-          sucess: false,
-          error: `No category name with ${createRestaurantInput.categoryName}.`,
-        };
+        return CategoryErrors.categoryNotFoundWithName(
+          createRestaurantInput.categoryName,
+        );
       }
       newRestaurant.category = category;
       await this.restaurantDB.save(newRestaurant);
-      return {
-        sucess: true,
-      };
+      return { sucess: true };
     } catch {
-      return {
-        sucess: false,
-        error: 'Unexpected error from createRestaurant',
-      };
+      return RestaurantErrors.unexpectedError('createRestaurant');
     }
   }
 
@@ -75,10 +71,7 @@ export class RestaurantService {
         restaurants,
       };
     } catch (e) {
-      return {
-        sucess: false,
-        error: 'Unexpected error from findAllRestaurant',
-      };
+      return RestaurantErrors.unexpectedError('findAllRestaurant');
     }
   }
 
@@ -89,12 +82,9 @@ export class RestaurantService {
       const restaurant = await this.restaurantDB.findOne({ id: restaurantId });
       return restaurant
         ? { sucess: true, restaurant }
-        : { sucess: false, error: 'Restaurant not found.' };
+        : RestaurantErrors.restaurantNotFound;
     } catch (e) {
-      return {
-        sucess: false,
-        error: 'Unexpected error from findRestaurantById',
-      };
+      return RestaurantErrors.unexpectedError('findRestaurantById');
     }
   }
 
@@ -115,12 +105,9 @@ export class RestaurantService {
             totalResult,
             totalPages: Math.ceil(totalResult / 25),
           }
-        : { sucess: false, error: 'Restaurant not found.' };
+        : RestaurantErrors.restaurantNotFound;
     } catch (e) {
-      return {
-        sucess: false,
-        error: 'Unexpected error from findRestaurantById',
-      };
+      return RestaurantErrors.unexpectedError('searchRestaurantByName');
     }
   }
 
@@ -133,16 +120,10 @@ export class RestaurantService {
         updateArgs.restaurantId,
       );
       if (!restaurant) {
-        return {
-          sucess: false,
-          error: 'Restaurant Not Found',
-        };
+        return RestaurantErrors.restaurantNotFound;
       }
       if (restaurant.ownerId != user.id) {
-        return {
-          sucess: false,
-          error: 'Access denied: not a owner of this restaurant.',
-        };
+        return RestaurantErrors.notOwner;
       }
       updateArgs.name && (restaurant.name = updateArgs.name);
       updateArgs.coverImg && (restaurant.coverImg = updateArgs.coverImg);
@@ -150,10 +131,9 @@ export class RestaurantService {
       if (updateArgs.categoryName) {
         const category = await this.isCategoryExist(updateArgs.categoryName);
         if (!category) {
-          return {
-            sucess: false,
-            error: `No category name with ${updateArgs.categoryName}.`,
-          };
+          return CategoryErrors.categoryNotFoundWithName(
+            updateArgs.categoryName,
+          );
         }
         restaurant.category = category;
       }
@@ -162,10 +142,7 @@ export class RestaurantService {
       ])[0];
       return { sucess: true };
     } catch (e) {
-      return {
-        sucess: false,
-        error: 'Unexpected error from updateRestaurant',
-      };
+      return RestaurantErrors.unexpectedError('updateRestaurant');
     }
   }
 
@@ -173,24 +150,15 @@ export class RestaurantService {
     try {
       const restaurant = await this.restaurantDB.findOne(restaurantId);
       if (!restaurant) {
-        return {
-          sucess: false,
-          error: 'Restaurant Not Found',
-        };
+        return RestaurantErrors.restaurantNotFound;
       }
       if (restaurant.ownerId != user.id) {
-        return {
-          sucess: false,
-          error: 'Access denied: not a owner of this restaurant.',
-        };
+        return RestaurantErrors.notOwner;
       }
       await this.restaurantDB.delete(restaurantId);
       return { sucess: true };
     } catch (e) {
-      return {
-        sucess: false,
-        error: 'Unexpected error from deleteRestaurant',
-      };
+      return RestaurantErrors.unexpectedError('deleteRestaurant');
     }
   }
 
@@ -199,12 +167,9 @@ export class RestaurantService {
       const categories = await this.categoryDB.find();
       return categories
         ? { sucess: true, categories }
-        : { sucess: false, error: 'Category not found.' };
+        : CategoryErrors.categoryNotFound;
     } catch {
-      return {
-        sucess: false,
-        error: 'Unexpected error from deleteRestaurant',
-      };
+      return CategoryErrors.unexpectedError('getAllCategory');
     }
   }
 
@@ -220,7 +185,7 @@ export class RestaurantService {
     try {
       const category = await this.categoryDB.findOne({ slug });
       if (!category) {
-        return { sucess: false, error: 'Category not found.' };
+        return CategoryErrors.categoryNotFound;
       }
       const totalResult = await this.restaurantCount(category);
       const restaurants = await this.restaurantDB.find({
@@ -236,10 +201,7 @@ export class RestaurantService {
         totalPages: Math.ceil(totalResult / 25),
       };
     } catch {
-      return {
-        sucess: false,
-        error: 'Unexpected error from deleteRestaurant',
-      };
+      return CategoryErrors.unexpectedError('getCategory');
     }
   }
 }
