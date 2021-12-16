@@ -4,7 +4,15 @@ import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { User } from 'src/user/entities/user.entity';
 import { Raw, Repository } from 'typeorm';
 import { GetAllCategoryOutput, GetCategoryOutput } from './dtos/category.dto';
-import { CreateDishInput } from './dtos/dish.dto';
+import {
+  CreateDishInput,
+  DeleteDishInput,
+  FindAllDishInput,
+  FindAllDishOutput,
+  FindDishInput,
+  FindDishOutput,
+  UpdateDishInput,
+} from './dtos/dish.dto';
 import {
   CreateRestaurantInput,
   FindAllRestaurantOutput,
@@ -230,6 +238,82 @@ export class RestaurantService {
       return { sucess: true };
     } catch (e) {
       return DishErrors.unexpectedError('createDish');
+    }
+  }
+
+  // async findAllDishById({
+  //   restaurantId,
+  // }: FindAllDishInput): Promise<FindAllDishOutput> {
+  //   try {
+  //     const restaurant = await this.restaurantDB.findOne(restaurantId, {
+  //       relations: ['menu'],
+  //     });
+  //     if (!restaurant) {
+  //       return RestaurantErrors.restaurantNotFound;
+  //     }
+  //     return {
+  //       sucess: true,
+  //       dishes: restaurant.menu,
+  //     };
+  //   } catch (e) {
+  //     return DishErrors.unexpectedError('findDishById');
+  //   }
+  // }
+
+  // async findDishById({ dishId }: FindDishInput): Promise<FindDishOutput> {
+  //   try {
+  //     const dish = await this.dishDB.findOne(dishId);
+  //     if (!dish) {
+  //       return DishErrors.dishNotFound;
+  //     }
+  //     return {
+  //       sucess: true,
+  //       dish,
+  //     };
+  //   } catch (e) {
+  //     return DishErrors.unexpectedError('findDishById');
+  //   }
+  // }
+
+  async updateDish(
+    user: User,
+    { dishId, ...updateDishInput }: UpdateDishInput,
+  ): Promise<CoreOuput> {
+    try {
+      const dish = await this.dishDB.findOne(dishId, {
+        relations: ['restaurant'],
+      });
+      if (!dish) {
+        return DishErrors.dishNotFound;
+      }
+      if (dish.restaurant.ownerId !== user.id) {
+        return RestaurantErrors.notOwner;
+      }
+      await this.dishDB.save([{ id: dishId, ...updateDishInput }]);
+      return { sucess: true };
+    } catch (e) {
+      return DishErrors.unexpectedError('updateDish');
+    }
+  }
+
+  async deleteDish(
+    user: User,
+    { dishId }: DeleteDishInput,
+  ): Promise<CoreOuput> {
+    try {
+      const dish = await this.dishDB.findOne(dishId, {
+        relations: ['restaurant'],
+      });
+      if (!dish) {
+        return DishErrors.dishNotFound;
+      }
+      if (dish.restaurant.ownerId !== user.id) {
+        return RestaurantErrors.notOwner;
+      }
+      await this.dishDB.delete(dishId);
+      return { sucess: true };
+    } catch (e) {
+      return DishErrors.unexpectedError('deleteDish');
     }
   }
 }

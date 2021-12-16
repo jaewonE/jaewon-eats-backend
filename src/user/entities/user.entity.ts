@@ -9,6 +9,7 @@ import {
   IsEmail,
   IsEnum,
   IsNumber,
+  IsOptional,
   IsPositive,
   IsString,
 } from 'class-validator';
@@ -43,6 +44,7 @@ export class User extends CoreEntity {
 
   @Column({ nullable: true })
   @Field(() => Number, { nullable: true })
+  @IsOptional()
   @IsNumber()
   @IsPositive()
   age?: number;
@@ -54,6 +56,7 @@ export class User extends CoreEntity {
 
   @Column({ type: 'enum', enum: UserGender, nullable: true })
   @Field(() => UserGender, { nullable: true })
+  @IsOptional()
   @IsEnum(UserGender)
   gender?: UserGender;
 

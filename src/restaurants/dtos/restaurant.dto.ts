@@ -5,7 +5,7 @@ import {
   PartialType,
   PickType,
 } from '@nestjs/graphql';
-import { IsDefined, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import {
   PaginationInput,
@@ -27,7 +27,8 @@ export class CreateRestaurantInput extends PickType(Restaurant, [
 @ObjectType()
 export class FindAllRestaurantOutput extends PaginationOutput {
   @Field(() => [Restaurant], { nullable: true })
-  @IsDefined()
+  @IsOptional()
+  @IsArray()
   restaurants?: Restaurant[];
 }
 
@@ -41,7 +42,7 @@ export class FindRestaurantByIdInput {
 @ObjectType()
 export class FindRestaurantByIdOutput extends CoreOuput {
   @Field(() => Restaurant, { nullable: true })
-  @IsDefined()
+  @IsOptional()
   restaurant?: Restaurant;
 }
 
@@ -55,7 +56,8 @@ export class SearchRestaurantByNameInput extends PaginationInput {
 @ObjectType()
 export class SearchRestaurantByNameOutput extends PaginationOutput {
   @Field(() => [Restaurant], { nullable: true })
-  @IsDefined()
+  @IsOptional()
+  @IsArray()
   restaurants?: Restaurant[];
 }
 

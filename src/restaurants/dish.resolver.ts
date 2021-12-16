@@ -1,9 +1,17 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { getUserFromReq } from 'src/auth/jwt/jwt.decorator';
 import { Role } from 'src/auth/role/role.decorator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { User } from 'src/user/entities/user.entity';
-import { CreateDishInput } from './dtos/dish.dto';
+import {
+  CreateDishInput,
+  DeleteDishInput,
+  FindAllDishInput,
+  FindAllDishOutput,
+  FindDishInput,
+  FindDishOutput,
+  UpdateDishInput,
+} from './dtos/dish.dto';
 import { Dish } from './entities/dish.entity';
 import { RestaurantService } from './restaurants.service';
 
@@ -18,5 +26,37 @@ export class DishResolver {
     @Args('input') createDishInput: CreateDishInput,
   ): Promise<CoreOuput> {
     return this.restaurantService.createDish(user, createDishInput);
+  }
+
+  // @Query(() => FindDishOutput)
+  // findDish(
+  //   @Args('input') findDishInput: FindDishInput,
+  // ): Promise<FindDishOutput> {
+  //   return this.restaurantService.findDishById(findDishInput);
+  // }
+
+  // @Query(() => FindAllDishOutput)
+  // findAllDish(
+  //   @Args('input') findAllDishInput: FindAllDishInput,
+  // ): Promise<FindAllDishOutput> {
+  //   return this.restaurantService.findAllDishById(findAllDishInput);
+  // }
+
+  @Mutation(() => CoreOuput)
+  @Role(['Owner'])
+  updateDish(
+    @getUserFromReq() user: User,
+    @Args('input') updateDishInput: UpdateDishInput,
+  ): Promise<CoreOuput> {
+    return this.restaurantService.updateDish(user, updateDishInput);
+  }
+
+  @Mutation(() => CoreOuput)
+  @Role(['Owner'])
+  deleteDish(
+    @getUserFromReq() user: User,
+    @Args('input') deleteDishInput: DeleteDishInput,
+  ): Promise<CoreOuput> {
+    return this.restaurantService.deleteDish(user, deleteDishInput);
   }
 }
