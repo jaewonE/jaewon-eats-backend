@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { getUserFromReq } from 'src/auth/jwt/jwt.decorator';
 import { Role } from 'src/auth/role/role.decorator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
@@ -6,10 +6,6 @@ import { User } from 'src/user/entities/user.entity';
 import {
   CreateDishInput,
   DeleteDishInput,
-  FindAllDishInput,
-  FindAllDishOutput,
-  FindDishInput,
-  FindDishOutput,
   UpdateDishInput,
 } from './dtos/dish.dto';
 import { Dish } from './entities/dish.entity';

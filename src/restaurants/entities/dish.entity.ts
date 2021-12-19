@@ -13,7 +13,7 @@ import { Restaurant } from './restaurants.entity';
 
 @InputType('DishChoiceInputType', { isAbstract: true })
 @ObjectType()
-class DishChoice {
+export class DishChoice {
   @Field(() => String)
   name: string;
   @Field(() => Number, { nullable: true })

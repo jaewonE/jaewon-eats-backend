@@ -5,6 +5,7 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import {
+  IsArray,
   IsBoolean,
   IsEmail,
   IsEnum,
@@ -18,6 +19,7 @@ import { BeforeInsert, Column, Entity, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Restaurant } from 'src/restaurants/entities/restaurants.entity';
+import { Order } from 'src/orders/entities/order.entity';
 
 export enum UserRole {
   Client = 'Client',
@@ -78,6 +80,16 @@ export class User extends CoreEntity {
   @OneToMany(() => Restaurant, (restaurant) => restaurant.owner)
   @Field(() => [Restaurant])
   restaurants: Restaurant[];
+
+  @OneToMany(() => Order, (order: Order) => order.customer)
+  @Field(() => [Order], { nullable: true })
+  @IsArray()
+  orders?: Order[];
+
+  @OneToMany(() => Order, (order: Order) => order.driver)
+  @Field(() => [Order], { nullable: true })
+  @IsArray()
+  rides?: Order[];
 
   @BeforeInsert()
   async hashPassword(): Promise<void> {

@@ -7,10 +7,6 @@ import { GetAllCategoryOutput, GetCategoryOutput } from './dtos/category.dto';
 import {
   CreateDishInput,
   DeleteDishInput,
-  FindAllDishInput,
-  FindAllDishOutput,
-  FindDishInput,
-  FindDishOutput,
   UpdateDishInput,
 } from './dtos/dish.dto';
 import {
