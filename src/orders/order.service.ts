@@ -5,11 +5,18 @@ import { Dish } from 'src/restaurants/entities/dish.entity';
 import { Restaurant } from 'src/restaurants/entities/restaurants.entity';
 import { DishErrors } from 'src/restaurants/errors/dish.error';
 import { RestaurantErrors } from 'src/restaurants/errors/restaurant.error';
-import { User } from 'src/user/entities/user.entity';
+import { User, UserRole } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
-import { CreateOrderInput } from './dtos/order.dto';
+import {
+  CreateOrderInput,
+  FindOrderInput,
+  FindOrderOutput,
+  FindOrdersInput,
+  FindOrdersOutput,
+  UpdateOrderInput,
+} from './dtos/order.dto';
 import { OrderItem } from './entities/order-item.entity';
-import { Order } from './entities/order.entity';
+import { Order, OrderStatus } from './entities/order.entity';
 import { OrderErrors } from './errors/order.error';
 
 @Injectable()
@@ -80,6 +87,159 @@ export class OrderService {
       };
     } catch (e) {
       return OrderErrors.unexpectedError('createOrder');
+    }
+  }
+
+  async findOrders(
+    user: User,
+    { status, page }: FindOrdersInput,
+  ): Promise<FindOrdersOutput> {
+    try {
+      let orders: Order[] = [];
+      let totalResult = 0;
+      switch (user.role) {
+        case UserRole.Client: {
+          [orders, totalResult] = await this.orderDB.findAndCount({
+            where: { customer: user, ...(status && { status }) },
+            skip: (page - 1) * 25,
+            take: 25,
+          });
+          break;
+        }
+        case UserRole.Delivery: {
+          [orders, totalResult] = await this.orderDB.findAndCount({
+            where: { driver: user, ...(status && { status }) },
+            skip: (page - 1) * 25,
+            take: 25,
+          });
+          break;
+        }
+        case UserRole.Owner: {
+          const restaurant = await this.restaurantDB.find({
+            where: { owner: user },
+            relations: ['orders'],
+          });
+          orders = restaurant
+            .map((restaurant: Restaurant) => restaurant.orders)
+            .flat(1);
+          if (status) {
+            orders.filter((order: Order) => order.status === status);
+          }
+          totalResult = orders.length;
+          if (totalResult > 25 && page > 1) {
+            if (totalResult > page * 25) {
+              orders = orders.slice((page - 1) * 25, page * 25);
+            } else {
+              orders = orders.slice((page - 1) * 25);
+            }
+          }
+          break;
+        }
+        default: {
+          throw Error('Wrong value in user.role');
+        }
+      }
+      if (orders) {
+        return {
+          sucess: true,
+          orders,
+          totalPages: Math.ceil(totalResult / 25),
+          totalResult,
+        };
+      } else {
+        return OrderErrors.orderNotFound;
+      }
+    } catch (e) {
+      return OrderErrors.unexpectedError('findOrders');
+    }
+  }
+
+  canAccessOrder(user: User, order: Order): boolean {
+    let canAccess = true;
+    if (user.role === UserRole.Client && order.customerId !== user.id) {
+      canAccess = false;
+    }
+    if (user.role === UserRole.Delivery && order.driverId !== user.id) {
+      canAccess = false;
+    }
+    if (user.role === UserRole.Owner && order.restaurant.ownerId !== user.id) {
+      canAccess = false;
+    }
+    return canAccess;
+  }
+
+  havePermissionToEdit(userRole: string, status: OrderStatus): boolean {
+    switch (userRole) {
+      case UserRole.Client: {
+        break;
+      }
+      case UserRole.Owner: {
+        if (status === OrderStatus.Pending || status === OrderStatus.Cooking) {
+          return true;
+        }
+        break;
+      }
+      case UserRole.Delivery: {
+        if (
+          status === OrderStatus.Cooked ||
+          status === OrderStatus.PickedUp ||
+          status === OrderStatus.Delivered
+        ) {
+          return true;
+        }
+        break;
+      }
+      default:
+        break;
+    }
+    return false;
+  }
+
+  async findOrder(
+    user: User,
+    { id: orderId }: FindOrderInput,
+  ): Promise<FindOrderOutput> {
+    try {
+      const order = await this.orderDB.findOne(orderId, {
+        relations: ['restaurant'],
+      });
+      if (!order) {
+        return OrderErrors.orderNotFound;
+      }
+      if (this.canAccessOrder(user, order)) {
+        return { sucess: true, order };
+      } else {
+        return OrderErrors.canNotAccessOrder;
+      }
+    } catch (e) {
+      console.error(e);
+      return OrderErrors.unexpectedError('findOrder');
+    }
+  }
+
+  async updateOrder(
+    user: User,
+    { id, status }: UpdateOrderInput,
+  ): Promise<CoreOuput> {
+    try {
+      const order = await this.orderDB.findOne(id, {
+        relations: ['restaurant'],
+      });
+      if (!order) {
+        return OrderErrors.orderNotFound;
+      }
+      if (this.canAccessOrder(user, order)) {
+        if (this.havePermissionToEdit(user.role, status)) {
+          await this.orderDB.save([{ id, status }]);
+          return { sucess: true };
+        } else {
+          return OrderErrors.dontHavePermission;
+        }
+      } else {
+        return OrderErrors.canNotAccessOrder;
+      }
+    } catch (e) {
+      return OrderErrors.unexpectedError('updateOrder');
     }
   }
 }

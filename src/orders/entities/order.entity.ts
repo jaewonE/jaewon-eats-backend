@@ -2,6 +2,7 @@ import {
   Field,
   Float,
   InputType,
+  Int,
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
@@ -9,12 +10,20 @@ import { IsArray, IsEnum, IsNumber, IsOptional } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Restaurant } from 'src/restaurants/entities/restaurants.entity';
 import { User } from 'src/user/entities/user.entity';
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  RelationId,
+} from 'typeorm';
 import { OrderItem } from './order-item.entity';
 
 export enum OrderStatus {
   Pending = 'Pending',
   Cooking = 'Cooking',
+  Cooked = 'Cooked',
   PickedUp = 'PickedUp',
   Delivered = 'Delivered',
 }
@@ -33,6 +42,12 @@ export class Order extends CoreEntity {
   @IsOptional()
   customer?: User;
 
+  @RelationId((order: Order) => order.customer)
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  customerId: number;
+
   @ManyToOne(() => User, (user: User) => user.rides, {
     onDelete: 'SET NULL',
     nullable: true,
@@ -40,6 +55,12 @@ export class Order extends CoreEntity {
   @Field(() => User, { nullable: true })
   @IsOptional()
   driver?: User;
+
+  @RelationId((order: Order) => order.driver)
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  driverId: number;
 
   @ManyToOne(() => Restaurant, (restaurant: Restaurant) => restaurant.orders, {
     onDelete: 'SET NULL',
