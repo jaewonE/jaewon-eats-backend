@@ -8,10 +8,6 @@ import {
 } from '@nestjs/graphql';
 import { IsArray, IsNumber, IsOptional } from 'class-validator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
-import {
-  PaginationInput,
-  PaginationOutput,
-} from 'src/common/dtos/pagination.dto';
 import { Dish } from '../entities/dish.entity';
 import { FindRestaurantByIdInput } from './restaurant.dto';
 

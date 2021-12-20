@@ -1,5 +1,18 @@
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import {
+  Field,
+  InputType,
+  Int,
+  ObjectType,
+  PartialType,
+  PickType,
+} from '@nestjs/graphql';
+import {
+  IsArray,
+  IsDefined,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import {
   PaginationInput,
@@ -16,10 +29,23 @@ export class GetAllCategoryOutput extends CoreOuput {
 }
 
 @InputType()
-export class GetCategoryInput extends PaginationInput {
-  @Field(() => String)
+export class CategorySelector {
+  @Field(() => String, { nullable: true })
+  @IsOptional()
   @IsString()
-  slug: string;
+  slug?: string;
+
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  id?: number;
+}
+
+@InputType()
+export class GetCategoryInput extends PaginationInput {
+  @Field(() => CategorySelector)
+  @IsDefined()
+  selector: CategorySelector;
 }
 
 @ObjectType()
@@ -27,4 +53,24 @@ export class GetCategoryOutput extends PaginationOutput {
   @Field(() => Category, { nullable: true })
   @IsOptional()
   category?: Category;
+}
+
+@InputType()
+export class CreateCategoryInput extends PickType(Category, [
+  'name',
+  'coverImg',
+]) {}
+
+@InputType()
+export class UpdateCategoryInput extends PartialType(CreateCategoryInput) {
+  @Field(() => Int)
+  @IsNumber()
+  categoryId: number;
+}
+
+@InputType()
+export class DeleteCategoryInput {
+  @Field(() => Int)
+  @IsNumber()
+  id: number;
 }

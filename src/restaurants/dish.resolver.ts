@@ -3,17 +3,17 @@ import { getUserFromReq } from 'src/auth/jwt/jwt.decorator';
 import { Role } from 'src/auth/role/role.decorator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { User } from 'src/user/entities/user.entity';
+import { DishService } from './dish.service';
 import {
   CreateDishInput,
   DeleteDishInput,
   UpdateDishInput,
 } from './dtos/dish.dto';
 import { Dish } from './entities/dish.entity';
-import { RestaurantService } from './restaurants.service';
 
 @Resolver(() => Dish)
 export class DishResolver {
-  constructor(private readonly restaurantService: RestaurantService) {}
+  constructor(private readonly dishService: DishService) {}
 
   @Mutation(() => CoreOuput)
   @Role(['Owner'])
@@ -21,21 +21,21 @@ export class DishResolver {
     @getUserFromReq() user: User,
     @Args('input') createDishInput: CreateDishInput,
   ): Promise<CoreOuput> {
-    return this.restaurantService.createDish(user, createDishInput);
+    return this.dishService.createDish(user, createDishInput);
   }
 
   // @Query(() => FindDishOutput)
   // findDish(
   //   @Args('input') findDishInput: FindDishInput,
   // ): Promise<FindDishOutput> {
-  //   return this.restaurantService.findDishById(findDishInput);
+  //   return this.dishService.findDishById(findDishInput);
   // }
 
   // @Query(() => FindAllDishOutput)
   // findAllDish(
   //   @Args('input') findAllDishInput: FindAllDishInput,
   // ): Promise<FindAllDishOutput> {
-  //   return this.restaurantService.findAllDishById(findAllDishInput);
+  //   return this.dishService.findAllDishById(findAllDishInput);
   // }
 
   @Mutation(() => CoreOuput)
@@ -44,7 +44,7 @@ export class DishResolver {
     @getUserFromReq() user: User,
     @Args('input') updateDishInput: UpdateDishInput,
   ): Promise<CoreOuput> {
-    return this.restaurantService.updateDish(user, updateDishInput);
+    return this.dishService.updateDish(user, updateDishInput);
   }
 
   @Mutation(() => CoreOuput)
@@ -53,6 +53,6 @@ export class DishResolver {
     @getUserFromReq() user: User,
     @Args('input') deleteDishInput: DeleteDishInput,
   ): Promise<CoreOuput> {
-    return this.restaurantService.deleteDish(user, deleteDishInput);
+    return this.dishService.deleteDish(user, deleteDishInput);
   }
 }
