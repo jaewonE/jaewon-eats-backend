@@ -1,4 +1,3 @@
-import { UseGuards } from '@nestjs/common';
 import {
   Args,
   Int,
@@ -8,7 +7,8 @@ import {
   ResolveField,
   Resolver,
 } from '@nestjs/graphql';
-import { adminGuard } from 'src/auth/admin.guard';
+import { isAdmin } from 'src/auth/jwt/jwt.decorator';
+import { Role } from 'src/auth/role/role.decorator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { CategoryService } from './category.service';
 import {
@@ -27,11 +27,14 @@ export class CategoryResolver {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Mutation(() => CoreOuput)
-  @UseGuards(adminGuard)
+  @Role(['Any'])
   createCategory(
+    @isAdmin() canAccess: boolean,
     @Args('input') createCategoryInput: CreateCategoryInput,
   ): Promise<CoreOuput> {
-    return this.categoryService.createCategory(createCategoryInput);
+    return canAccess
+      ? this.categoryService.createCategory(createCategoryInput)
+      : Promise.resolve(CategoryErrors.notAdmin);
   }
 
   @ResolveField(() => Int)
@@ -59,18 +62,24 @@ export class CategoryResolver {
   }
 
   @Mutation(() => CoreOuput)
-  @UseGuards(adminGuard)
+  @Role(['Any'])
   updateCategory(
+    @isAdmin() canAccess: boolean,
     @Args('input') updateCategoryInput: UpdateCategoryInput,
   ): Promise<CoreOuput> {
-    return this.categoryService.updateCategory(updateCategoryInput);
+    return canAccess
+      ? this.categoryService.updateCategory(updateCategoryInput)
+      : Promise.resolve(CategoryErrors.notAdmin);
   }
 
   @Mutation(() => CoreOuput)
-  @UseGuards(adminGuard)
+  @Role(['Any'])
   deleteCategory(
+    @isAdmin() canAccess: boolean,
     @Args('input') deleteCategoryInput: DeleteCategoryInput,
   ): Promise<CoreOuput> {
-    return this.categoryService.deleteCategory(deleteCategoryInput);
+    return canAccess
+      ? this.categoryService.deleteCategory(deleteCategoryInput)
+      : Promise.resolve(CategoryErrors.notAdmin);
   }
 }

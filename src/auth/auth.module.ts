@@ -1,9 +1,11 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { UserModule } from 'src/user/user.module';
 import { AuthAppGuard } from './auth.guard';
 import { JwtService } from './jwt/jwt.service';
 
 @Module({
+  imports: [forwardRef(() => UserModule)],
   providers: [
     JwtService,
     {

@@ -46,7 +46,7 @@ export class FindOrdersOutput extends PaginationOutput {
 }
 
 @InputType()
-export class FindOrderInput extends PickType(Order, ['id']) {}
+export class OrderIdInput extends PickType(Order, ['id']) {}
 
 @ObjectType()
 export class FindOrderOutput extends CoreOuput {

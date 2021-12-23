@@ -15,4 +15,8 @@ export const OrderErrors = {
     sucess: false,
     error: 'Permission denied: do not have permission to edit the order.',
   },
+  takenOrder: {
+    sucess: false,
+    error: 'this order already has been taken.',
+  },
 };

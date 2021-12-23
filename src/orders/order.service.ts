@@ -1,5 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PubSub } from 'graphql-subscriptions';
+import {
+  NEW_COOKED_ORDER,
+  NEW_ORDER_UPDATE,
+  NEW_PADDING_ORDER,
+} from 'src/common/common.constant';
+import { PUB_SUB } from 'src/common/common.module';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { Dish } from 'src/restaurants/entities/dish.entity';
 import { Restaurant } from 'src/restaurants/entities/restaurants.entity';
@@ -9,7 +16,7 @@ import { User, UserRole } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import {
   CreateOrderInput,
-  FindOrderInput,
+  OrderIdInput,
   FindOrderOutput,
   FindOrdersInput,
   FindOrdersOutput,
@@ -30,6 +37,7 @@ export class OrderService {
     private readonly orderDB: Repository<Order>,
     @InjectRepository(OrderItem)
     private readonly orderItemDB: Repository<OrderItem>,
+    @Inject(PUB_SUB) private readonly pubsub: PubSub,
   ) {}
 
   async createOrder(
@@ -74,7 +82,7 @@ export class OrderService {
         );
         orderItems.push(orderItem);
       }
-      await this.orderDB.save(
+      const order = await this.orderDB.save(
         this.orderDB.create({
           customer,
           restaurant,
@@ -82,10 +90,14 @@ export class OrderService {
           total: finalPrice,
         }),
       );
+      await this.pubsub.publish(NEW_PADDING_ORDER, {
+        paddingOrders: { order, ownerId: restaurant.ownerId },
+      });
       return {
         sucess: true,
       };
     } catch (e) {
+      console.error(e);
       return OrderErrors.unexpectedError('createOrder');
     }
   }
@@ -155,17 +167,16 @@ export class OrderService {
   }
 
   canAccessOrder(user: User, order: Order): boolean {
-    let canAccess = true;
     if (user.role === UserRole.Client && order.customerId !== user.id) {
-      canAccess = false;
+      return false;
     }
     if (user.role === UserRole.Delivery && order.driverId !== user.id) {
-      canAccess = false;
+      return false;
     }
     if (user.role === UserRole.Owner && order.restaurant.ownerId !== user.id) {
-      canAccess = false;
+      return false;
     }
-    return canAccess;
+    return true;
   }
 
   havePermissionToEdit(userRole: string, status: OrderStatus): boolean {
@@ -174,14 +185,17 @@ export class OrderService {
         break;
       }
       case UserRole.Owner: {
-        if (status === OrderStatus.Pending || status === OrderStatus.Cooking) {
+        if (
+          status === OrderStatus.Pending ||
+          status === OrderStatus.Cooking ||
+          status === OrderStatus.Cooked
+        ) {
           return true;
         }
         break;
       }
       case UserRole.Delivery: {
         if (
-          status === OrderStatus.Cooked ||
           status === OrderStatus.PickedUp ||
           status === OrderStatus.Delivered
         ) {
@@ -197,12 +211,10 @@ export class OrderService {
 
   async findOrder(
     user: User,
-    { id: orderId }: FindOrderInput,
+    { id: orderId }: OrderIdInput,
   ): Promise<FindOrderOutput> {
     try {
-      const order = await this.orderDB.findOne(orderId, {
-        relations: ['restaurant'],
-      });
+      const order = await this.orderDB.findOne(orderId);
       if (!order) {
         return OrderErrors.orderNotFound;
       }
@@ -222,15 +234,22 @@ export class OrderService {
     { id, status }: UpdateOrderInput,
   ): Promise<CoreOuput> {
     try {
-      const order = await this.orderDB.findOne(id, {
-        relations: ['restaurant'],
-      });
+      const order = await this.orderDB.findOne(id);
       if (!order) {
         return OrderErrors.orderNotFound;
       }
       if (this.canAccessOrder(user, order)) {
+        const updatedOrder = { ...order, status };
         if (this.havePermissionToEdit(user.role, status)) {
-          await this.orderDB.save([{ id, status }]);
+          await this.orderDB.save(updatedOrder);
+          if (status === OrderStatus.Cooked) {
+            await this.pubsub.publish(NEW_COOKED_ORDER, {
+              cookedOrders: { order: updatedOrder },
+            });
+          }
+          await this.pubsub.publish(NEW_ORDER_UPDATE, {
+            orderUpdates: updatedOrder,
+          });
           return { sucess: true };
         } else {
           return OrderErrors.dontHavePermission;
@@ -240,6 +259,35 @@ export class OrderService {
       }
     } catch (e) {
       return OrderErrors.unexpectedError('updateOrder');
+    }
+  }
+
+  async takeOrder(
+    driver: User,
+    { id: orderId }: OrderIdInput,
+  ): Promise<CoreOuput> {
+    try {
+      const order = await this.orderDB.findOne(orderId);
+      if (!order) {
+        return OrderErrors.orderNotFound;
+      }
+      if (
+        order.status === OrderStatus.PickedUp ||
+        order.status === OrderStatus.Delivered
+      ) {
+        return OrderErrors.takenOrder;
+      }
+      await this.orderDB.save({
+        id: orderId,
+        status: OrderStatus.PickedUp,
+        driver,
+      });
+      await this.pubsub.publish(NEW_ORDER_UPDATE, {
+        orderUpdates: { ...order, status: OrderStatus.PickedUp, driver },
+      });
+      return { sucess: true };
+    } catch (e) {
+      return OrderErrors.unexpectedError('takeOrder');
     }
   }
 }
