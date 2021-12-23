@@ -14,6 +14,8 @@ import { Dish } from './restaurants/entities/dish.entity';
 import { OrdersModule } from './orders/orders.module';
 import { Order } from './orders/entities/order.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
+import { PaymentModule } from './payment/payment.module';
+import { Payment } from './payment/entities/payment.entities';
 
 @Module({
   imports: [
@@ -41,7 +43,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
       synchronize: process.env.NODE_ENV !== 'prod',
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
-      entities: [User, Restaurant, Category, Dish, Order, OrderItem],
+      entities: [User, Restaurant, Category, Dish, Order, OrderItem, Payment],
     }),
     GraphQLModule.forRoot({
       installSubscriptionHandlers: true,
@@ -59,6 +61,7 @@ import { OrderItem } from './orders/entities/order-item.entity';
     AuthModule,
     RestaurantsModule,
     OrdersModule,
+    PaymentModule,
   ],
   controllers: [],
   providers: [],
