@@ -1,5 +1,12 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { IsArray, IsOptional, IsString, Length } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsOptional,
+  IsString,
+  Length,
+} from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Order } from 'src/orders/entities/order.entity';
 import { User } from 'src/user/entities/user.entity';
@@ -55,4 +62,15 @@ export class Restaurant extends CoreEntity {
   @Field(() => [Order], { nullable: true })
   @IsArray()
   orders?: Order[];
+
+  @Column({ default: false })
+  @Field(() => Boolean, { defaultValue: false })
+  @IsBoolean()
+  isPromoted: boolean;
+
+  @Column({ nullable: true })
+  @Field(() => Date, { nullable: true })
+  @IsOptional()
+  @IsDate()
+  promotedUntil?: Date;
 }

@@ -52,6 +52,9 @@ export class RestaurantService {
       const [restaurants, totalResult] = await this.restaurantDB.findAndCount({
         take: 25,
         skip: (page - 1) * 25,
+        order: {
+          isPromoted: 'DESC',
+        },
       });
       return {
         sucess: true,
@@ -86,6 +89,9 @@ export class RestaurantService {
         where: { name: Raw((name) => `${name} ILIKE '%${restaurantName}%'`) },
         skip: (page - 1) * 25,
         take: 25,
+        order: {
+          isPromoted: 'DESC',
+        },
       });
       return restaurants
         ? {

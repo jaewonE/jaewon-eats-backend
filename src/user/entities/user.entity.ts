@@ -92,7 +92,7 @@ export class User extends CoreEntity {
   @IsArray()
   rides?: Order[];
 
-  @OneToMany(() => Payment, (payment: Payment) => payment.user)
+  @OneToMany(() => Payment, (payment: Payment) => payment.user, { eager: true })
   @Field(() => [Payment], { nullable: true })
   payments: Payment[];
 

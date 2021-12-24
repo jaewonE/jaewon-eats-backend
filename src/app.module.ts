@@ -16,6 +16,7 @@ import { Order } from './orders/entities/order.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
 import { PaymentModule } from './payment/payment.module';
 import { Payment } from './payment/entities/payment.entities';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { Payment } from './payment/entities/payment.entities';
         },
       },
     }),
+    ScheduleModule.forRoot(),
     UserModule,
     CommonModule,
     AuthModule,
