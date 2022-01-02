@@ -5,7 +5,7 @@ import {
   PartialType,
   PickType,
 } from '@nestjs/graphql';
-import { IsDefined, IsEmail, IsNumber, IsOptional } from 'class-validator';
+import { IsEmail, IsNumber, IsOptional } from 'class-validator';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { User } from '../entities/user.entity';
 
@@ -33,18 +33,7 @@ export class CreateUserInput extends PickType(User, [
 ]) {}
 
 @InputType()
-export class UpdateUser extends PartialType(CreateUserInput) {}
-
-@InputType()
-export class UpdateUserInput {
-  @IsDefined()
-  @Field(() => UserSelector)
-  selector: UserSelector;
-
-  @IsDefined()
-  @Field(() => UpdateUser)
-  payload: UpdateUser;
-}
+export class UpdateUserInput extends PartialType(CreateUserInput) {}
 
 @ObjectType()
 export class UserOutput extends CoreOuput {

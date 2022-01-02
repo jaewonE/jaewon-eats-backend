@@ -5,7 +5,6 @@ import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
 import { LoginInput, LoginOutput } from './dtos/userAuth.dto';
 import {
   CreateUserInput,
-  UpdateUser,
   UpdateUserInput,
   UserOutput,
   UserSelector,
@@ -32,15 +31,6 @@ export class UserResolver {
     }
   }
 
-  checkPayload(payload: UpdateUser): { noElementError?: string } {
-    if (!Object.keys(payload).length) {
-      return {
-        noElementError:
-          'The element to be updated does not exist in the payload.',
-      };
-    } else return {};
-  }
-
   @Mutation(() => CoreOuput)
   async createUser(
     @Args('input') createUserInput: CreateUserInput,
@@ -61,29 +51,16 @@ export class UserResolver {
   @Mutation(() => UserOutput)
   @Role(['Any'])
   async updateUser(
+    @getUserFromReq() user: User,
     @Args('input') updateUserInput: UpdateUserInput,
   ): Promise<UserOutput> {
-    const { noElementError } = this.checkPayload(updateUserInput.payload);
-    if (noElementError) {
-      return { sucess: false, error: noElementError };
-    } else {
-      const { error, selector } = this.checkSelectorElement(
-        updateUserInput.selector,
-      );
-      return error
-        ? { sucess: false, error }
-        : this.userService.updateUser(selector, updateUserInput.payload);
-    }
+    return this.userService.updateUser(user, updateUserInput);
   }
 
   @Mutation(() => CoreOuput)
-  async deleteUser(
-    @Args('input') inputSelector: UserSelector,
-  ): Promise<UserOutput> {
-    const { error, selector } = this.checkSelectorElement(inputSelector);
-    return error
-      ? { sucess: false, error }
-      : this.userService.deleteUser(selector);
+  @Role(['Any'])
+  async deleteUser(@getUserFromReq() user: User): Promise<UserOutput> {
+    return this.userService.deleteUser(user);
   }
 
   @Mutation(() => LoginOutput)

@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { LoginInput, LoginOutput } from './dtos/userAuth.dto';
 import {
   CreateUserInput,
-  UpdateUser,
+  UpdateUserInput,
   UserOutput,
   UserSelector,
 } from './dtos/userCRUD.dto';
@@ -48,11 +48,11 @@ export class UserService {
   }
 
   async updateUser(
-    selector: UserSelector,
-    payload: UpdateUser,
+    currentUser: User,
+    payload: UpdateUserInput,
   ): Promise<UserOutput> {
     try {
-      const user = await this.userDB.findOne(selector);
+      const user = await this.userDB.findOne(currentUser.id);
       if (user) {
         if (payload.email) {
           user.email = payload.email;
@@ -77,11 +77,11 @@ export class UserService {
     }
   }
 
-  async deleteUser(selector: UserSelector): Promise<CoreOuput> {
+  async deleteUser(currentUser: User): Promise<CoreOuput> {
     try {
-      const user = await this.userDB.findOne(selector);
+      const user = await this.userDB.findOne(currentUser.id);
       if (user) {
-        await this.userDB.delete(selector);
+        await this.userDB.delete({ id: user.id });
         return { sucess: true };
       } else {
         return userErrors.userNotFound;
