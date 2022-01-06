@@ -15,7 +15,7 @@ import {
   IsString,
 } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
-import { BeforeInsert, Column, Entity, OneToMany } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Restaurant } from 'src/restaurants/entities/restaurants.entity';
@@ -30,9 +30,9 @@ export enum UserRole {
 registerEnumType(UserRole, { name: 'UserRole' });
 
 enum UserGender {
-  Male,
-  Female,
-  Genderless,
+  Male = 'Male',
+  Female = 'Female',
+  Genderless = 'Genderless',
 }
 registerEnumType(UserGender, { name: 'UserGender' });
 
@@ -80,23 +80,28 @@ export class User extends CoreEntity {
 
   @OneToMany(() => Restaurant, (restaurant) => restaurant.owner)
   @Field(() => [Restaurant])
+  @IsArray()
   restaurants: Restaurant[];
 
   @OneToMany(() => Order, (order: Order) => order.customer)
   @Field(() => [Order], { nullable: true })
+  @IsOptional()
   @IsArray()
   orders?: Order[];
 
   @OneToMany(() => Order, (order: Order) => order.driver)
   @Field(() => [Order], { nullable: true })
+  @IsOptional()
   @IsArray()
   rides?: Order[];
 
   @OneToMany(() => Payment, (payment: Payment) => payment.user, { eager: true })
   @Field(() => [Payment], { nullable: true })
+  @IsArray()
   payments: Payment[];
 
   @BeforeInsert()
+  @BeforeUpdate()
   async hashPassword(): Promise<void> {
     if (this.password) {
       try {

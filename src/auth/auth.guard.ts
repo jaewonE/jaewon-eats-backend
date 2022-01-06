@@ -2,8 +2,11 @@ import {
   CanActivate,
   ExecutionContext,
   forwardRef,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
@@ -41,7 +44,7 @@ export class AuthAppGuard implements CanActivate {
     if (token) {
       const decoded = this.jwtService.verify(token.toString());
       if (typeof decoded === 'object' && decoded.hasOwnProperty('id')) {
-        const { sucess, user } = await this.userService.findUser({
+        const { sucess, error, user } = await this.userService.findUser({
           id: decoded['id'],
         });
         if (sucess) {
@@ -50,9 +53,18 @@ export class AuthAppGuard implements CanActivate {
             return true;
           }
           return roles.includes(user.role);
+        } else {
+          console.log(error);
+          throw new NotFoundException(error);
         }
       }
     }
+    throw new HttpException(
+      {
+        status: HttpStatus.METHOD_NOT_ALLOWED,
+      },
+      HttpStatus.METHOD_NOT_ALLOWED,
+    );
     return false;
   }
 }

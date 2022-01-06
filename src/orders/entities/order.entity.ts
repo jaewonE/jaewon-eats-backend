@@ -35,7 +35,7 @@ registerEnumType(OrderStatus, { name: 'OrderStatus' });
 @Entity()
 export class Order extends CoreEntity {
   @ManyToOne(() => User, (user: User) => user.orders, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
     nullable: true,
     eager: true,
   })

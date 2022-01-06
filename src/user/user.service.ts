@@ -61,6 +61,8 @@ export class UserService {
         if (payload.password) user.password = payload.password;
         if (payload.age) user.age = payload.age;
         if (payload.name) user.name = payload.name;
+        if (payload.gender) user.gender = payload.gender;
+        if (payload.role) user.role = payload.role;
         try {
           await this.userDB.save(this.userDB.create(user));
           return { sucess: true, user };
