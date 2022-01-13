@@ -1,12 +1,5 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import {
-  IsBoolean,
-  IsDate,
-  IsDefined,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsDefined, IsNumber, IsString } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Restaurant } from 'src/restaurants/entities/restaurants.entity';
 import { User } from 'src/user/entities/user.entity';

@@ -81,6 +81,7 @@ export class CategoryService {
   async getCategory(
     selector: CategorySelector,
     page: number,
+    take: number,
   ): Promise<GetCategoryOutput> {
     try {
       const category = await this.categoryDB.findOne(selector);
@@ -90,8 +91,8 @@ export class CategoryService {
       const totalResult = await this.restaurantCount(category);
       const restaurants = await this.restaurantDB.find({
         where: { category },
-        take: 25,
-        skip: (page - 1) * 25,
+        take: take,
+        skip: (page - 1) * take,
         order: { isPromoted: 'DESC' },
       });
       category.restaurants = restaurants;
@@ -99,7 +100,7 @@ export class CategoryService {
         sucess: true,
         category,
         totalResult,
-        totalPages: Math.ceil(totalResult / 25),
+        totalPages: Math.ceil(totalResult / take),
       };
     } catch {
       return CategoryErrors.unexpectedError('getCategory');

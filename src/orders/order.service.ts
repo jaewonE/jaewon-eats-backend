@@ -104,7 +104,7 @@ export class OrderService {
 
   async findOrders(
     user: User,
-    { status, page }: FindOrdersInput,
+    { status, page, take }: FindOrdersInput,
   ): Promise<FindOrdersOutput> {
     try {
       let orders: Order[] = [];
@@ -113,16 +113,16 @@ export class OrderService {
         case UserRole.Client: {
           [orders, totalResult] = await this.orderDB.findAndCount({
             where: { customer: user, ...(status && { status }) },
-            skip: (page - 1) * 25,
-            take: 25,
+            skip: (page - 1) * take,
+            take: take,
           });
           break;
         }
         case UserRole.Delivery: {
           [orders, totalResult] = await this.orderDB.findAndCount({
             where: { driver: user, ...(status && { status }) },
-            skip: (page - 1) * 25,
-            take: 25,
+            skip: (page - 1) * take,
+            take: take,
           });
           break;
         }
@@ -138,11 +138,11 @@ export class OrderService {
             orders.filter((order: Order) => order.status === status);
           }
           totalResult = orders.length;
-          if (totalResult > 25 && page > 1) {
-            if (totalResult > page * 25) {
-              orders = orders.slice((page - 1) * 25, page * 25);
+          if (totalResult > take && page > 1) {
+            if (totalResult > page * take) {
+              orders = orders.slice((page - 1) * take, page * take);
             } else {
-              orders = orders.slice((page - 1) * 25);
+              orders = orders.slice((page - 1) * take);
             }
           }
           break;
@@ -155,7 +155,7 @@ export class OrderService {
         return {
           sucess: true,
           orders,
-          totalPages: Math.ceil(totalResult / 25),
+          totalPages: Math.ceil(totalResult / take),
           totalResult,
         };
       } else {

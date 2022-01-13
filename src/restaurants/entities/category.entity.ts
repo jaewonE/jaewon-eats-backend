@@ -1,5 +1,5 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { IsString, Length } from 'class-validator';
+import { IsString } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { Restaurant } from './restaurants.entity';
@@ -11,7 +11,6 @@ export class Category extends CoreEntity {
   @Field(() => String)
   @Column({ unique: true })
   @IsString()
-  @Length(5)
   name: string;
 
   @Field(() => String)

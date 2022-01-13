@@ -32,9 +32,9 @@ export class RestaurantResolver {
 
   @Query(() => FindAllRestaurantOutput)
   findAllRestaurant(
-    @Args('input') { page }: PaginationInput,
+    @Args('input') paginationInput: PaginationInput,
   ): Promise<FindAllRestaurantOutput> {
-    return this.restaurantService.findAllRestaurant(page);
+    return this.restaurantService.findAllRestaurant(paginationInput);
   }
 
   @Query(() => FindRestaurantByIdOutput)
@@ -46,9 +46,13 @@ export class RestaurantResolver {
 
   @Query(() => SearchRestaurantByNameOutput)
   searchRestaurant(
-    @Args('input') { page, restaurantName }: SearchRestaurantByNameInput,
+    @Args('input') { page, take, restaurantName }: SearchRestaurantByNameInput,
   ): Promise<SearchRestaurantByNameOutput> {
-    return this.restaurantService.searchRestaurantByName(page, restaurantName);
+    return this.restaurantService.searchRestaurantByName(
+      page,
+      take,
+      restaurantName,
+    );
   }
 
   @Mutation(() => CoreOuput)

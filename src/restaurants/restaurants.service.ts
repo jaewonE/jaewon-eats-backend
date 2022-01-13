@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CoreOuput } from 'src/common/dtos/coreOutput.dto';
+import { PaginationInput } from 'src/common/dtos/pagination.dto';
 import { User } from 'src/user/entities/user.entity';
 import { Raw, Repository } from 'typeorm';
 import { CategoryService } from './category.service';
@@ -47,19 +48,23 @@ export class RestaurantService {
     }
   }
 
-  async findAllRestaurant(page: number): Promise<FindAllRestaurantOutput> {
+  async findAllRestaurant({
+    page,
+    take,
+  }: PaginationInput): Promise<FindAllRestaurantOutput> {
     try {
       const [restaurants, totalResult] = await this.restaurantDB.findAndCount({
-        take: 25,
-        skip: (page - 1) * 25,
+        take: take,
+        skip: (page - 1) * take,
         order: {
           isPromoted: 'DESC',
         },
+        relations: ['category'],
       });
       return {
         sucess: true,
         totalResult,
-        totalPages: Math.ceil(totalResult / 25),
+        totalPages: Math.ceil(totalResult / take),
         restaurants,
       };
     } catch (e) {
@@ -82,13 +87,14 @@ export class RestaurantService {
 
   async searchRestaurantByName(
     page: number,
+    take: number,
     restaurantName: string,
   ): Promise<SearchRestaurantByNameOutput> {
     try {
       const [restaurants, totalResult] = await this.restaurantDB.findAndCount({
         where: { name: Raw((name) => `${name} ILIKE '%${restaurantName}%'`) },
-        skip: (page - 1) * 25,
-        take: 25,
+        skip: (page - 1) * take,
+        take: take,
         order: {
           isPromoted: 'DESC',
         },
@@ -98,7 +104,7 @@ export class RestaurantService {
             sucess: true,
             restaurants,
             totalResult,
-            totalPages: Math.ceil(totalResult / 25),
+            totalPages: Math.ceil(totalResult / take),
           }
         : RestaurantErrors.restaurantNotFound;
     } catch (e) {

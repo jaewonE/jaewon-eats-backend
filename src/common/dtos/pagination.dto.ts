@@ -7,6 +7,10 @@ export class PaginationInput {
   @Field(() => Number)
   @IsNumber()
   page: number;
+
+  @Field(() => Number)
+  @IsNumber()
+  take: number;
 }
 
 @ObjectType()

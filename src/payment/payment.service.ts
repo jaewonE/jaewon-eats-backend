@@ -52,13 +52,13 @@ export class PaymentService {
 
   async findPayments(
     user: User,
-    { page }: PaginationInput,
+    { page, take }: PaginationInput,
   ): Promise<FindPaymentOutput> {
     try {
       const [payments, totalResult] = await this.paymentDB.findAndCount({
         where: { user },
-        skip: (page - 1) * 25,
-        take: 25,
+        skip: (page - 1) * take,
+        take: take,
       });
       if (!payments) {
         return PaymentErrors.paymentNotFound;
@@ -67,7 +67,7 @@ export class PaymentService {
         sucess: true,
         payments,
         totalResult,
-        totalPages: Math.ceil(totalResult / 25),
+        totalPages: Math.ceil(totalResult / take),
       };
     } catch (e) {
       return PaymentErrors.unexpectedError('findPayments');

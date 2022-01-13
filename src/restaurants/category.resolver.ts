@@ -49,13 +49,13 @@ export class CategoryResolver {
 
   @Query(() => GetCategoryOutput)
   getCategory(
-    @Args('input') { selector, page }: GetCategoryInput,
+    @Args('input') { selector, page, take }: GetCategoryInput,
   ): Promise<GetCategoryOutput> {
     const { id, slug } = selector;
     if (id) {
-      return this.categoryService.getCategory({ id }, page);
+      return this.categoryService.getCategory({ id }, page, take);
     } else if (slug) {
-      return this.categoryService.getCategory({ slug }, page);
+      return this.categoryService.getCategory({ slug }, page, take);
     } else {
       return Promise.resolve(CategoryErrors.noSelector);
     }
