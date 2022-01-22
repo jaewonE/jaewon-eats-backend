@@ -10,6 +10,7 @@ import {
   CreateRestaurantInput,
   FindAllRestaurantOutput,
   FindRestaurantByIdOutput,
+  MyRestaurantsOutput,
   SearchRestaurantByNameOutput,
   UpdateRestaurantInput,
 } from './dtos/restaurant.dto';
@@ -76,7 +77,10 @@ export class RestaurantService {
     restaurantId: number,
   ): Promise<FindRestaurantByIdOutput> {
     try {
-      const restaurant = await this.restaurantDB.findOne({ id: restaurantId });
+      const restaurant = await this.restaurantDB.findOne({
+        where: { id: restaurantId },
+        relations: ['category', 'menu'],
+      });
       return restaurant
         ? { sucess: true, restaurant }
         : RestaurantErrors.restaurantNotFound;
@@ -162,6 +166,21 @@ export class RestaurantService {
       return { sucess: true };
     } catch (e) {
       return RestaurantErrors.unexpectedError('deleteRestaurant');
+    }
+  }
+
+  async myRestaurants(owner: User): Promise<MyRestaurantsOutput> {
+    try {
+      const restaurants = await this.restaurantDB.find({ owner });
+      if (!restaurants) {
+        return RestaurantErrors.restaurantNotFound;
+      }
+      return {
+        restaurants,
+        sucess: true,
+      };
+    } catch {
+      return RestaurantErrors.unexpectedError('myRestaurants');
     }
   }
 }

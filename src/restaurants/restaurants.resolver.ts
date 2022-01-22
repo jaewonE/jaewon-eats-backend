@@ -10,6 +10,7 @@ import {
   FindAllRestaurantOutput,
   FindRestaurantByIdInput,
   FindRestaurantByIdOutput,
+  MyRestaurantsOutput,
   SearchRestaurantByNameInput,
   SearchRestaurantByNameOutput,
   UpdateRestaurantInput,
@@ -71,5 +72,11 @@ export class RestaurantResolver {
     @Args('input') { restaurantId }: DeleteRestaurantInput,
   ): Promise<CoreOuput> {
     return this.restaurantService.deleteRestaurant(user, restaurantId);
+  }
+
+  @Query(() => MyRestaurantsOutput)
+  @Role(['Owner'])
+  myRestaurants(@getUserFromReq() user: User): Promise<MyRestaurantsOutput> {
+    return this.restaurantService.myRestaurants(user);
   }
 }

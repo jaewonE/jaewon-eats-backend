@@ -74,3 +74,9 @@ export class DeleteRestaurantInput {
   @IsNumber()
   restaurantId: number;
 }
+
+@ObjectType()
+export class MyRestaurantsOutput extends CoreOuput {
+  @Field(() => [Restaurant])
+  restaurants?: Restaurant[];
+}
