@@ -1,6 +1,6 @@
 {
   "name": "jaewon-eats-backend",
-  "version": "0.6.5",
+  "version": "0.7.0",
   "description": "jaewon-eats-backend using Typescript, NestJS, Postgresql, GraphQL",
   "author": "JaewonE",
   "private": true,
@@ -52,6 +52,7 @@
     "@types/cron": "^1.7.3",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.0.1",
+    "@types/multer": "^1.4.7",
     "@types/node": "^16.0.0",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^4.28.2",

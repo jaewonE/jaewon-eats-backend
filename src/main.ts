@@ -12,6 +12,7 @@ async function nestApp() {
       disableErrorMessages: process.env.NODE_ENV === 'prod' ? true : false,
     }),
   );
+  app.enableCors();
   await app.listen(4000);
 }
 nestApp();

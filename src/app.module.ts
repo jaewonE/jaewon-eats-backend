@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import * as Joi from 'joi';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -17,6 +22,8 @@ import { OrderItem } from './orders/entities/order-item.entity';
 import { PaymentModule } from './payment/payment.module';
 import { Payment } from './payment/entities/payment.entities';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UploadModule } from './uploads/upload.module';
+import { uploadMiddleware } from './uploads/upload.middleware';
 
 @Module({
   imports: [
@@ -64,8 +71,15 @@ import { ScheduleModule } from '@nestjs/schedule';
     RestaurantsModule,
     OrdersModule,
     PaymentModule,
+    UploadModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(uploadMiddleware)
+      .forRoutes({ path: '/upload', method: RequestMethod.POST });
+  }
+}

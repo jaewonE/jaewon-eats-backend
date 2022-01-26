@@ -1,6 +1,7 @@
 import {
   Field,
   InputType,
+  Int,
   ObjectType,
   PartialType,
   PickType,
@@ -22,6 +23,14 @@ export class CreateRestaurantInput extends PickType(Restaurant, [
   @Field(() => String)
   @IsString()
   categoryName: string;
+}
+
+@ObjectType()
+export class CreateRestaurantOutput extends CoreOuput {
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  restaurantId?: number;
 }
 
 @ObjectType()

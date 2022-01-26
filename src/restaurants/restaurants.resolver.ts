@@ -6,6 +6,7 @@ import { PaginationInput } from 'src/common/dtos/pagination.dto';
 import { User } from 'src/user/entities/user.entity';
 import {
   CreateRestaurantInput,
+  CreateRestaurantOutput,
   DeleteRestaurantInput,
   FindAllRestaurantOutput,
   FindRestaurantByIdInput,
@@ -22,12 +23,12 @@ import { RestaurantService } from './restaurants.service';
 export class RestaurantResolver {
   constructor(private readonly restaurantService: RestaurantService) {}
 
-  @Mutation(() => CoreOuput)
+  @Mutation(() => CreateRestaurantOutput)
   @Role(['Owner'])
   createRestaurant(
     @getUserFromReq() user: User,
     @Args('input') createRestaurantInput: CreateRestaurantInput,
-  ): Promise<CoreOuput> {
+  ): Promise<CreateRestaurantOutput> {
     return this.restaurantService.createRestaurant(user, createRestaurantInput);
   }
 

@@ -54,7 +54,6 @@ export class AuthAppGuard implements CanActivate {
           }
           return roles.includes(user.role);
         } else {
-          console.log(error);
           throw new NotFoundException(error);
         }
       }
@@ -65,6 +64,5 @@ export class AuthAppGuard implements CanActivate {
       },
       HttpStatus.METHOD_NOT_ALLOWED,
     );
-    return false;
   }
 }

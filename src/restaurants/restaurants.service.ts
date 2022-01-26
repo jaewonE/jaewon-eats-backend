@@ -8,6 +8,7 @@ import { CategoryService } from './category.service';
 
 import {
   CreateRestaurantInput,
+  CreateRestaurantOutput,
   FindAllRestaurantOutput,
   FindRestaurantByIdOutput,
   MyRestaurantsOutput,
@@ -29,7 +30,7 @@ export class RestaurantService {
   async createRestaurant(
     user: User,
     createRestaurantInput: CreateRestaurantInput,
-  ): Promise<CoreOuput> {
+  ): Promise<CreateRestaurantOutput> {
     try {
       const newRestaurant = this.restaurantDB.create(createRestaurantInput);
       newRestaurant.owner = user;
@@ -42,8 +43,8 @@ export class RestaurantService {
         );
       }
       newRestaurant.category = category;
-      await this.restaurantDB.save(newRestaurant);
-      return { sucess: true };
+      const { id: restaurantId } = await this.restaurantDB.save(newRestaurant);
+      return { sucess: true, restaurantId };
     } catch {
       return RestaurantErrors.unexpectedError('createRestaurant');
     }
