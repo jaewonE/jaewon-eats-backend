@@ -32,8 +32,6 @@ export class RestaurantService {
     createRestaurantInput: CreateRestaurantInput,
   ): Promise<CreateRestaurantOutput> {
     try {
-      const newRestaurant = this.restaurantDB.create(createRestaurantInput);
-      newRestaurant.owner = user;
       const category = await this.categoryService.isCategoryExist(
         createRestaurantInput.categoryName,
       );
@@ -42,9 +40,11 @@ export class RestaurantService {
           createRestaurantInput.categoryName,
         );
       }
+      const newRestaurant = this.restaurantDB.create(createRestaurantInput);
+      newRestaurant.owner = user;
       newRestaurant.category = category;
-      const { id: restaurantId } = await this.restaurantDB.save(newRestaurant);
-      return { sucess: true, restaurantId };
+      const { id } = await this.restaurantDB.save(newRestaurant);
+      return { sucess: true, restaurantId: id };
     } catch {
       return RestaurantErrors.unexpectedError('createRestaurant');
     }

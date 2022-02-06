@@ -1,33 +1,45 @@
 import {
   Controller,
+  InternalServerErrorException,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { getUserFromReq } from 'src/auth/jwt/jwt.decorator';
-import { User } from 'src/user/entities/user.entity';
-import { createImageURL, multerOptions } from './multer-options';
+import { multerOptions } from './multer-options';
 import { getUploadPayload, IGetUploadPayloadOutput } from './upload.decorator';
+import { SameFileExist } from './upload.guard';
+import { UploadService } from './upload.service';
 
 @Controller('upload')
-export class uploadController {
+export class UploadController {
+  constructor(private readonly uploadService: UploadService) {}
+
   @Post('/')
+  @UseGuards(SameFileExist)
   @UseInterceptors(FileInterceptor('file', multerOptions))
-  uploadFile(
+  async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @getUploadPayload() { user, restaurantName }: IGetUploadPayloadOutput,
   ) {
-    return {
-      status: 200,
-      message: '파일 업로드를 성공하였습니다.',
-      data: {
-        file: createImageURL({
-          name: `${user.id}_${restaurantName}${file.originalname.slice(
-            file.originalname.lastIndexOf('.'),
-          )}`,
-        }),
-      },
-    };
+    try {
+      const uploadFileName = `${
+        user.id
+      }-${restaurantName}${file.originalname.slice(
+        file.originalname.lastIndexOf('.'),
+      )}`;
+      await this.uploadService.registCoverImg(uploadFileName);
+      return {
+        status: 200,
+        message: 'Sucessfully upload file.',
+        data: {
+          file: uploadFileName,
+        },
+      };
+    } catch (e) {
+      console.log(e);
+      throw new InternalServerErrorException('Internal Server Error');
+    }
   }
 }

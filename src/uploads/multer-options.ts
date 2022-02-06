@@ -12,7 +12,12 @@ export const multerOptions = {
       // 이미지 형식은 jpg, jpeg, png만 허용합니다.
       callback(null, true);
     } else {
-      callback(new BadRequestException(), false);
+      callback(
+        new BadRequestException(
+          'Only files with jpg, jpeg, png extension are allowed',
+        ),
+        false,
+      );
     }
   },
 
@@ -32,7 +37,7 @@ export const multerOptions = {
       if (user?.id && restaurantName) {
         callback(
           null,
-          `${user.id}_${restaurantName}${file.originalname.slice(
+          `${user.id}-${restaurantName}${file.originalname.slice(
             file.originalname.lastIndexOf('.'),
           )}`,
         );
@@ -46,13 +51,13 @@ export const multerOptions = {
   }),
 };
 
-interface ICreateImageURL {
-  file?: Express.Multer.File;
-  name?: string;
-}
+// interface ICreateImageURL {
+//   file?: Express.Multer.File;
+//   name?: string;
+// }
 
-export const createImageURL = ({ file, name }: ICreateImageURL): string => {
-  if (file) return `${uploadPath}/${file.originalname}`;
-  else if (name) return `${uploadPath}/${name}`;
-  else throw new Error('createImageURL function need more than one arguments.');
-};
+// export const createImageURL = ({ file, name }: ICreateImageURL): string => {
+//   if (file) return `${uploadPath}/${file.originalname}`;
+//   else if (name) return `${uploadPath}/${name}`;
+//   else throw new Error('createImageURL function need more than one arguments.');
+// };

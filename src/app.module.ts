@@ -24,6 +24,7 @@ import { Payment } from './payment/entities/payment.entities';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UploadModule } from './uploads/upload.module';
 import { uploadMiddleware } from './uploads/upload.middleware';
+import { RestaurantCoverImg } from './uploads/entities/uploads.entity';
 
 @Module({
   imports: [
@@ -51,7 +52,16 @@ import { uploadMiddleware } from './uploads/upload.middleware';
       synchronize: process.env.NODE_ENV !== 'prod',
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
-      entities: [User, Restaurant, Category, Dish, Order, OrderItem, Payment],
+      entities: [
+        User,
+        Restaurant,
+        Category,
+        Dish,
+        Order,
+        OrderItem,
+        Payment,
+        RestaurantCoverImg,
+      ],
     }),
     GraphQLModule.forRoot({
       installSubscriptionHandlers: true,
